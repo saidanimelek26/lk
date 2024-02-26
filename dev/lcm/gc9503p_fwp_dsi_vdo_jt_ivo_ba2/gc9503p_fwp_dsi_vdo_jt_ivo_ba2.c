@@ -170,9 +170,6 @@ static void lcm_get_params(LCM_PARAMS *params)
     params->height = FRAME_HEIGHT;
     params->physical_width = 68;
     params->physical_height = 136;
-    params->physical_width_um = 68040;
-    params->physical_height_um = 136080;
-
     params->dsi.LANE_NUM = LCM_TWO_LANE;
 
     params->dsi.data_format.format = LCM_DSI_FORMAT_RGB888;
