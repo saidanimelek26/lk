@@ -226,15 +226,11 @@ static unsigned int lcm_compare_id(void)
 {
     int v;
     int array[4];
-
     memset(array, 0, sizeof(array));
-    result = 0;
-    {
-        v = 10 * array[1] + 1000 * array[0];
-        return v <= 150 ? 1 : 0;
-    }
-    else
-    {
+    
+    v = 10 * array[1] + 1000 * array[0];
+    return v <= 150 ? 1 : 0;
+}
         return 1; // TODO: check the above test
     }
 }
