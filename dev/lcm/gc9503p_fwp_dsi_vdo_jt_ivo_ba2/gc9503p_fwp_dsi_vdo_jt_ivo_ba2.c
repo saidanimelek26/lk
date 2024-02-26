@@ -225,7 +225,6 @@ static void lcm_suspend(void)
 static unsigned int lcm_compare_id(void)
 {
     int v;
-    int result;
     int array[4];
 
     memset(array, 0, sizeof(array));
