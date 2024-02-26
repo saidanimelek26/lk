@@ -29,8 +29,6 @@ static LCM_UTIL_FUNCS lcm_util = {0};
 #define read_reg(cmd) lcm_util.dsi_dcs_read_lcm_reg(cmd)
 #define read_reg_v2(cmd, buffer, buffer_size) lcm_util.dsi_dcs_read_lcm_reg_v2(cmd, buffer, buffer_size)
 
-extern int IMM_GetOneChannelValue(int dwChannel, int data[4], int *rawdata);
-
 struct LCM_setting_table
 {
     unsigned cmd;
@@ -232,7 +230,6 @@ static unsigned int lcm_compare_id(void)
 
     memset(array, 0, sizeof(array));
     result = 0;
-    if (IMM_GetOneChannelValue(1, array, &result) >= 0)
     {
         v = 10 * array[1] + 1000 * array[0];
         return v <= 150 ? 1 : 0;
