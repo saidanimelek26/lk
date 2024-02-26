@@ -229,11 +229,10 @@ static unsigned int lcm_compare_id(void)
     memset(array, 0, sizeof(array));
     
     v = 10 * array[1] + 1000 * array[0];
-    return v <= 150 ? 1 : 0;
-}
-
-        return 1; // TODO: check the above test
+    if (v <= 150) {
+        return 1;
     }
+    return 0;
 }
 
 static void lcm_resume(void)
