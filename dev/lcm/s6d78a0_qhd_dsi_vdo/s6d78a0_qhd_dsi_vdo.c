@@ -21,22 +21,7 @@
 #include <mach/mt_gpio.h>
 #include <cust_gpio_usage.h>
 #endif
-#include <linux/fs.h>
-#include <linux/slab.h>
-#include <linux/init.h>
-#include <linux/list.h>
-#include <linux/irq.h>
-/* #include <linux/jiffies.h> */
-/* #include <linux/delay.h> */
-#include <linux/uaccess.h>
-#include <linux/interrupt.h>
-#include <linux/io.h>
-#include <linux/platform_device.h>
 #include "lcm_drv.h"
-#include "ddp_hal.h"
-#include <linux/spinlock.h>
-
-
 #define LCM_LOGI(fmt, args...)  pr_debug("[KERNEL/"LOG_TAG"]"fmt, ##args)
 #define LCM_LOGD(fmt, args...)  pr_debug("[KERNEL/"LOG_TAG"]"fmt, ##args)
 
