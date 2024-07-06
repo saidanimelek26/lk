@@ -49,7 +49,7 @@
 #endif
 
 extern LCM_DRIVER hct_otm1285a_dsi_vdo_hd_boe;
-extern LCM_DRIVER st7701_fwgaplus_dsi_vdo_helitai_vp531_lcm_drv;
+extern LCM_DRIVER s6d78a0_qhd_dsi_vdo;
 extern LCM_DRIVER hct_ili9881_dsi_vdo_hd_cpt;
 extern LCM_DRIVER hct_hx8394f_dsi_vdo_hd_cmi;
 extern LCM_DRIVER hct_otm1282_dsi_vdo_hd_auo;
@@ -63,9 +63,9 @@ LCM_DRIVER *lcm_driver_list[] = {
 #if defined(GC9503P_FWP_DSI_VDO_JT_IVO_BA2)
    &gc9503p_fwp_dsi_vdo_jt_ivo_ba2_lcm_drv,
 #endif
-
-#if defined(ST7701_FWGAPLUS_DSI_VDO_HELITAI_VP531)
-   &st7701_fwgaplus_dsi_vdo_helitai_vp531_lcm_drv,
+s6d78a0_qhd_dsi_vdo
+#if defined(S6D78A0_QHD_DSI_VDO)
+   &s6d78a0_qhd_dsi_vdo,
 #endif
 
 #if defined(HCT_ILI9881_DSI_VDO_HD_CPT)
