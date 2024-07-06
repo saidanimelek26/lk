@@ -63,7 +63,7 @@ LCM_DRIVER *lcm_driver_list[] = {
 #if defined(GC9503P_FWP_DSI_VDO_JT_IVO_BA2)
    &gc9503p_fwp_dsi_vdo_jt_ivo_ba2_lcm_drv,
 #endif
-s6d78a0_qhd_dsi_vdo
+
 #if defined(S6D78A0_QHD_DSI_VDO)
    &s6d78a0_qhd_dsi_vdo,
 #endif
