@@ -14,9 +14,6 @@
 #ifndef __LCM_DRV_H__
 #define __LCM_DRV_H__
 
-#include <linux/platform_device.h>
-#include <linux/regulator/consumer.h>
-
 #ifndef ARY_SIZE
 #define ARY_SIZE(x) (sizeof((x)) / sizeof((x[0])))
 #endif
