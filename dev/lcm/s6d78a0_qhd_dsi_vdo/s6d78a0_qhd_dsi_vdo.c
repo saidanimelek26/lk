@@ -15,7 +15,6 @@
 
 #ifndef BUILD_LK
 #include <linux/string.h>
-#include <linux/kernel.h>
 #include <linux/spinlock.h>
 #endif
 #ifdef CONFIG_MTK_LEGACY
