@@ -22,4 +22,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: lk.img
-        path: /home/runner/work/lk/lk/k37mv1_bsp/lk.img
+        path: /home/runner/work/lk/lk/build-k37mv1_bsp/lk-bin.img
