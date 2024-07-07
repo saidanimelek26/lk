@@ -22,7 +22,6 @@
 #include <mach/mt_gpio.h>
 #include <cust_gpio_usage.h>
 #endif
-#include <linux/module.h>
 #include <linux/fs.h>
 #include <linux/slab.h>
 #include <linux/init.h>
