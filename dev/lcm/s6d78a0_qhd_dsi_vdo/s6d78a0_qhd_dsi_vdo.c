@@ -12,26 +12,7 @@
  */
  
 #define LOG_TAG "LCM"
-
-#ifndef BUILD_LK
-#include <linux/string.h>
-#include <kernel.h>
-#include <spinlock.h>
-#endif
-#ifdef CONFIG_MTK_LEGACY
-#include <mach/mt_gpio.h>
-#include <cust_gpio_usage.h>
-#endif
-#include "irq.h"
-/* #include <linux/jiffies.h> */
-/* #include <linux/delay.h> */
-#include <linux/uaccess.h>
-#include <linux/interrupt.h>
-#include <linux/io.h>
-#include <linux/platform_device.h>
 #include "lcm_drv.h"
-#include "ddp_hal.h"
-#include "spinlock.h"
 
 #define LCM_LOGI(fmt, args...)  pr_debug("[KERNEL/"LOG_TAG"]"fmt, ##args)
 #define LCM_LOGD(fmt, args...)  pr_debug("[KERNEL/"LOG_TAG"]"fmt, ##args)
