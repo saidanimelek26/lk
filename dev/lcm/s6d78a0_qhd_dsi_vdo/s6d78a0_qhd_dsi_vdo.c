@@ -300,7 +300,6 @@ struct brt_value brt_table_ktd[] = {
 
 static int lcd_first_pwron = 1;
 int CurrDimmingPulse;
-int PrevDimmingPulse = START_BRIGHTNESS;
 
 static void lcd_backlight_control(int num)
 {
@@ -330,10 +329,8 @@ static void lcm_setbacklight(unsigned int level)
 		if(user_intensity < 10)
 			CurrDimmingPulse = 2;
 		else if (user_intensity == 255)
-			CurrDimmingPulse = brt_table_ktd[MAX_BRT_STAGE_KTD - 1].tune_level;
 		else {
-			for(i = 0; i < MAX_BRT_STAGE_KTD; i++) {
-				if(user_intensity <= brt_table_ktd[i].level ) {
+			if(user_intensity <= brt_table_ktd[i].level ) {
 					CurrDimmingPulse = brt_table_ktd[i].tune_level;
 					break;
 				}
