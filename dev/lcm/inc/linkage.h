@@ -3,7 +3,6 @@
 
 #include "compiler.h"
 #include "stringify.h"
-#include <linux/export.h>
 #include "llinkage.h"
 
 /* Some toolchains use other characters (e.g. '`') to mark new line in macro */
