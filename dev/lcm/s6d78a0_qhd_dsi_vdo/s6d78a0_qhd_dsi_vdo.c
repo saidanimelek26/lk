@@ -22,10 +22,6 @@
 #include <mach/mt_gpio.h>
 #include <cust_gpio_usage.h>
 #endif
-#include <linux/fs.h>
-#include <linux/slab.h>
-#include <linux/init.h>
-#include <linux/list.h>
 #include <linux/irq.h>
 /* #include <linux/jiffies.h> */
 /* #include <linux/delay.h> */
