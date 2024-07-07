@@ -489,7 +489,7 @@ static void lcm_resume(void)
 	lcm_init();
 }
 
-LCM_DRIVER s6d78a0_qhd_dsi_vdo_drv = {
+LCM_DRIVER s6d78a0_qhd_dsi_vdo = {
 	.name = "s6d78a0_qhd_dsi_vdo",
 	.set_util_funcs = lcm_set_util_funcs,
 	.compare_id = lcm_compare_id,
