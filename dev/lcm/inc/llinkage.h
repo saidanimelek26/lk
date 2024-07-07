@@ -25,6 +25,4 @@ name:
 
 #endif
 
-#include <asm-generic/ilinkage.h>
-
 #endif /* _ASM_C6X_LINKAGE_H */
