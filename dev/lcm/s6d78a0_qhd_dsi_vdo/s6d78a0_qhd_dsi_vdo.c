@@ -15,14 +15,14 @@
 
 #ifndef BUILD_LK
 #include <linux/string.h>
-#include <add/kernel.h>
-#include <linux/spinlock.h>
+#include <kernel.h>
+#include <spinlock.h>
 #endif
 #ifdef CONFIG_MTK_LEGACY
 #include <mach/mt_gpio.h>
 #include <cust_gpio_usage.h>
 #endif
-#include <add/kernel.h>
+#include "kernel.sh"
 #include <linux/module.h>
 #include <linux/fs.h>
 #include <linux/slab.h>
@@ -37,7 +37,7 @@
 #include <linux/platform_device.h>
 #include "lcm_drv.h"
 #include "ddp_hal.h"
-#include <linux/spinlock.h>
+#include "spinlock.h"
 
 #define LCM_LOGI(fmt, args...)  pr_debug("[KERNEL/"LOG_TAG"]"fmt, ##args)
 #define LCM_LOGD(fmt, args...)  pr_debug("[KERNEL/"LOG_TAG"]"fmt, ##args)
