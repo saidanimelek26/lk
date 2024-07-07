@@ -301,73 +301,6 @@ struct brt_value brt_table_ktd[] = {
 static int lcd_first_pwron = 1;
 int CurrDimmingPulse;
 
-static void lcd_backlight_control(int num)
-{
-	int limit;
-	unsigned long flags;
-
-	limit = num;
-	for( ; limit > 0; limit--) {
-		UDELAY(10);
-		set_gpio_blic_en(0);
-		UDELAY(40); 
-		set_gpio_blic_en(1);
-	}
-}
-
-static void lcm_setbacklight(unsigned int level)
-/* Temporary backlight control function for feature re-define for samsung's product.
-     This code should be changed after normal porting for samsung's platform for lcd dirver. 
-*/
-	int user_intensity = level;
-
-	int pulse = 0;
-	int i;
-
-	if(user_intensity > 0) {
-		if(user_intensity < 10)
-			CurrDimmingPulse = 2;
-		else if (user_intensity == 255)
-		else {
-			if(user_intensity <= brt_table_ktd[i].level ) {
-					CurrDimmingPulse = brt_table_ktd[i].tune_level;
-					break;
-				}
-			}
-		}
-	} else {
-		CurrDimmingPulse = 0;
-		set_gpio_blic_en(0);
-		set_gpio_blic_ctl(0);
-		MDELAY(10);
-		PrevDimmingPulse = CurrDimmingPulse;
-		return;
-	}
-
-	if (PrevDimmingPulse == CurrDimmingPulse) {
-		PrevDimmingPulse = CurrDimmingPulse;
-		return;
-	} else {
-		if (PrevDimmingPulse == 0) {
-			set_gpio_blic_en(1);
-			MDELAY(10);
-			set_gpio_blic_ctl(1);
-			MDELAY(5);
-		}
-
-		if( PrevDimmingPulse < CurrDimmingPulse)
-			pulse = (32 + PrevDimmingPulse) - CurrDimmingPulse;
-		else if(PrevDimmingPulse > CurrDimmingPulse)
-			pulse = PrevDimmingPulse - CurrDimmingPulse;
-
-		lcd_backlight_control(pulse);	
-		PrevDimmingPulse = CurrDimmingPulse;
-
-		return;
-	}
-	PrevDimmingPulse = CurrDimmingPulse;
-}
-
 static void lcm_init(void)
 {
 	/*LP11*/
@@ -454,7 +387,6 @@ LCM_DRIVER s6d78a0_qhd_dsi_vdo_drv = {
 	.resume = lcm_resume,
 	.init_power = lcm_init_power,
 	.resume_power = lcm_resume_power,
-	.set_backlight  = lcm_setbacklight,
 #if defined(LCM_DSI_CMD_MODE)
 	.update = lcm_update,
 #endif
