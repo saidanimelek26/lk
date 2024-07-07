@@ -22,7 +22,7 @@
 #include <mach/mt_gpio.h>
 #include <cust_gpio_usage.h>
 #endif
-#include "kernel.sh"
+#include "kernel.h"
 #include <linux/module.h>
 #include <linux/fs.h>
 #include <linux/slab.h>
