@@ -1,6 +1,23 @@
 #ifndef _LINUX_IRQ_H
 #define _LINUX_IRQ_H
 
+#include <linux/linkage.h>
+#include <linux/cache.h>
+#include <linux/spinlock.h>
+#include <linux/cpumask.h>
+#include <linux/gfp.h>
+#include <linux/irqhandler.h>
+#include <linux/irqreturn.h>
+#include <linux/irqnr.h>
+#include <linux/errno.h>
+#include <linux/topology.h>
+#include <linux/wait.h>
+#include <linux/io.h>
+
+#include <asm/irq.h>
+#include <asm/ptrace.h>
+#include <asm/irq_regs.h>
+
 /*
  * Please do not include this file in generic code.  There is currently
  * no requirement for any architecture to implement anything held
