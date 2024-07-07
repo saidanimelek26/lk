@@ -9,24 +9,6 @@
  * Thanks. --rmk
  */
 
-#include <linux/smp.h>
-#include <linux/linkage.h>
-#include <linux/cache.h>
-#include <linux/spinlock.h>
-#include <linux/cpumask.h>
-#include <linux/gfp.h>
-#include <linux/irqhandler.h>
-#include <linux/irqreturn.h>
-#include <linux/irqnr.h>
-#include <linux/errno.h>
-#include <linux/topology.h>
-#include <linux/wait.h>
-#include <linux/io.h>
-
-#include <asm/irq.h>
-#include <asm/ptrace.h>
-#include <asm/irq_regs.h>
-
 struct seq_file;
 struct module;
 struct msi_msg;
