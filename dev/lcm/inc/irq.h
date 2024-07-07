@@ -1,7 +1,7 @@
 #ifndef _LINUX_IRQ_H
 #define _LINUX_IRQ_H
 
-#include <linux/linkage.h>
+#include "linkage.h"
 #include <linux/cache.h>
 #include <linux/spinlock.h>
 #include <linux/cpumask.h>
