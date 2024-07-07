@@ -316,7 +316,6 @@ static void lcd_backlight_control(int num)
 }
 
 static void lcm_setbacklight(unsigned int level)
-{
 /* Temporary backlight control function for feature re-define for samsung's product.
      This code should be changed after normal porting for samsung's platform for lcd dirver. 
 */
