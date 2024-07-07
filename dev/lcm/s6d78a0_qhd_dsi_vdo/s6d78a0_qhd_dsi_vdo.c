@@ -39,10 +39,11 @@
 #endif
 #include "lcm_drv.h"
 
-
-
+#ifdef BUILD_LK
+#define LCM_LOGI(fmt, args...)
+#else
 #define LCM_LOGI(fmt, args...)  pr_debug("[KERNEL/"LOG_TAG"]"fmt, ##args)
-#define LCM_LOGD(fmt, args...)  pr_debug("[KERNEL/"LOG_TAG"]"fmt, ##args)
+#endif
 
 /* --------------------------------------------------------------------------- */
 /* Local Constants */
@@ -68,6 +69,7 @@ static LCM_UTIL_FUNCS lcm_util;
 	lcm_util.dsi_write_cmd(cmd)
 #define write_regs(addr, pdata, byte_nums)\
 	lcm_util.dsi_write_regs(addr, pdata, byte_nums)
+
 /* #define read_reg lcm_util.dsi_read_reg() */
 #define read_reg_v2(cmd, buffer, buffer_size)\
 	lcm_util.dsi_dcs_read_lcm_reg_v2(cmd, buffer, buffer_size)
@@ -77,6 +79,7 @@ static LCM_UTIL_FUNCS lcm_util;
 		lcm_util.set_gpio_lcd_rst_enp(cmd)
 #define set_gpio_lcd_bias(cmd)\
 			lcm_util.set_gpio_lcd_bias_enp(cmd)
+#define set_gpio_lcd_enp(cmd) lcm_util.set_gpio_lcd_enp_bias(cmd)
 #define set_gpio_blic_ctl(cmd)\
 				lcm_util.set_gpio_blic_ctl_enp(cmd)	
 #define set_gpio_blic_en(cmd)\
@@ -291,6 +294,8 @@ static unsigned int lcm_compare_id(void)
 	return 1;
 }
 
+static int lcd_first_pwron = 1;
+
 #ifndef BUILD_LK
 struct brt_value{
 	int level;/* Platform setting values */
@@ -332,7 +337,6 @@ static DEFINE_SPINLOCK(bl_ctrl_lock);
 /*This value should be same as bootloader*/
 #define START_BRIGHTNESS 10
 
-static int lcd_first_pwron = 1;
 int CurrDimmingPulse;
 int PrevDimmingPulse = START_BRIGHTNESS;
 
