@@ -297,11 +297,6 @@ struct brt_value brt_table_ktd[] = {
 	{ 246,  27 }, 
 	{ 255,  28 },
 };
-static DEFINE_SPINLOCK(bl_ctrl_lock);
-#define MAX_BRT_STAGE_KTD (int)(sizeof(brt_table_ktd)/sizeof(struct brt_value))
-
-/*This value should be same as bootloader*/
-#define START_BRIGHTNESS 10
 
 static int lcd_first_pwron = 1;
 int CurrDimmingPulse;
@@ -313,14 +308,12 @@ static void lcd_backlight_control(int num)
 	unsigned long flags;
 
 	limit = num;
-	spin_lock_irqsave(&bl_ctrl_lock, flags);
 	for( ; limit > 0; limit--) {
 		UDELAY(10);
 		set_gpio_blic_en(0);
 		UDELAY(40); 
 		set_gpio_blic_en(1);
 	}
-	spin_unlock_irqrestore(&bl_ctrl_lock, flags);
 }
 
 static void lcm_setbacklight(unsigned int level)
