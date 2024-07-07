@@ -21,5 +21,5 @@ jobs:
     - name : Upload bootloader
       uses: actions/upload-artifact@v2
       with:
-        name: X5_lk-signed.img
+        name: lk.img
         path: /home/runner/work/lk/lk/k37mv1_bsp/lk-sign.img
