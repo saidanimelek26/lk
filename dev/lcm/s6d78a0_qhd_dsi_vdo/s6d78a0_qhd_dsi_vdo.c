@@ -22,7 +22,7 @@
 #include <mach/mt_gpio.h>
 #include <cust_gpio_usage.h>
 #endif
-#include <linux/irq.h>
+#include "irq.h"
 /* #include <linux/jiffies.h> */
 /* #include <linux/delay.h> */
 #include <linux/uaccess.h>
