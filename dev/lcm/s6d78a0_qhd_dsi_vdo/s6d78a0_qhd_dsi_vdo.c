@@ -45,6 +45,8 @@
 #define LCM_LOGI(fmt, args...)  pr_debug("[KERNEL/"LOG_TAG"]"fmt, ##args)
 #endif
 
+#define SET_RESET_PIN(v)    (lcm_util.set_reset_pin((v)))
+
 /* --------------------------------------------------------------------------- */
 /* Local Constants */
 /* --------------------------------------------------------------------------- */
@@ -206,7 +208,9 @@ void push_table(struct LCM_setting_table *table,\
 /* ---------------------------------------------------------------------------*/
 static void lcm_set_util_funcs(const LCM_UTIL_FUNCS *util)
 {
+#ifndef BUILD_LK
 	printk("lcm_set_util_funcs \n");
+#endif
 	memcpy(&lcm_util, util, sizeof(LCM_UTIL_FUNCS));
 }
 static void lcm_get_params(LCM_PARAMS *params)
@@ -482,7 +486,9 @@ static void lcm_resume(void)
 	LCM_LOGI("%s, \n", __func__);
 
 	if (lcd_first_pwron == 1) {
+#ifndef BUILD_LK
 		printk("pre booting return \n");
+#endif
 		return;
 
 	}
