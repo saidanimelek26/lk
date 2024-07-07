@@ -12,7 +12,34 @@
  */
  
 #define LOG_TAG "LCM"
+
+#ifndef BUILD_LK
+#include <linux/string.h>
+#include <linux/kernel.h>
+#include <linux/spinlock.h>
+#ifdef CONFIG_MTK_LEGACY
+#include <mach/mt_gpio.h>
+#include <cust_gpio_usage.h>
+#endif
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/fs.h>
+#include <linux/slab.h>
+#include <linux/init.h>
+#include <linux/list.h>
+#include <linux/irq.h>
+/* #include <linux/jiffies.h> */
+/* #include <linux/delay.h> */
+#include <linux/uaccess.h>
+#include <linux/interrupt.h>
+#include <linux/io.h>
+#include <linux/platform_device.h>
+#include "ddp_hal.h"
+#include <linux/spinlock.h>
+#endif
 #include "lcm_drv.h"
+
+
 
 #define LCM_LOGI(fmt, args...)  pr_debug("[KERNEL/"LOG_TAG"]"fmt, ##args)
 #define LCM_LOGD(fmt, args...)  pr_debug("[KERNEL/"LOG_TAG"]"fmt, ##args)
@@ -54,6 +81,7 @@ static LCM_UTIL_FUNCS lcm_util;
 				lcm_util.set_gpio_blic_ctl_enp(cmd)	
 #define set_gpio_blic_en(cmd)\
 			lcm_util.set_gpio_blic_en_enp(cmd)
+
 /* #define LCM_DSI_CMD_MODE */
 struct LCM_setting_table {
 	unsigned cmd;
@@ -161,7 +189,6 @@ void push_table(struct LCM_setting_table *table,\
 			case REGFLAG_DELAY:
 				MDELAY(table[i].count);
 			break;
-
 			case REGFLAG_END_OF_TABLE:
 			break;
 
@@ -263,6 +290,8 @@ static unsigned int lcm_compare_id(void)
 
 	return 1;
 }
+
+#ifndef BUILD_LK
 struct brt_value{
 	int level;/* Platform setting values */
 	int tune_level;/* Chip Setting values*/
@@ -297,9 +326,88 @@ struct brt_value brt_table_ktd[] = {
 	{ 246,  27 }, 
 	{ 255,  28 },
 };
+static DEFINE_SPINLOCK(bl_ctrl_lock);
+#define MAX_BRT_STAGE_KTD (int)(sizeof(brt_table_ktd)/sizeof(struct brt_value))
+
+/*This value should be same as bootloader*/
+#define START_BRIGHTNESS 10
 
 static int lcd_first_pwron = 1;
 int CurrDimmingPulse;
+int PrevDimmingPulse = START_BRIGHTNESS;
+
+static void lcd_backlight_control(int num)
+{
+	int limit;
+	unsigned long flags;
+
+	limit = num;
+	spin_lock_irqsave(&bl_ctrl_lock, flags);
+	for( ; limit > 0; limit--) {
+		UDELAY(10);
+		set_gpio_blic_en(0);
+		UDELAY(40); 
+		set_gpio_blic_en(1);
+	}
+	spin_unlock_irqrestore(&bl_ctrl_lock, flags);
+}
+
+static void lcm_setbacklight(unsigned int level)
+{
+/* Temporary backlight control function for feature re-define for samsung's product.
+     This code should be changed after normal porting for samsung's platform for lcd dirver. 
+*/
+	int user_intensity = level;
+
+	int pulse = 0;
+	int i;
+
+	if(user_intensity > 0) {
+		if(user_intensity < 10)
+			CurrDimmingPulse = 2;
+		else if (user_intensity == 255)
+			CurrDimmingPulse = brt_table_ktd[MAX_BRT_STAGE_KTD - 1].tune_level;
+		else {
+			for(i = 0; i < MAX_BRT_STAGE_KTD; i++) {
+				if(user_intensity <= brt_table_ktd[i].level ) {
+					CurrDimmingPulse = brt_table_ktd[i].tune_level;
+					break;
+				}
+			}
+		}
+	} else {
+		CurrDimmingPulse = 0;
+		set_gpio_blic_en(0);
+		set_gpio_blic_ctl(0);
+		MDELAY(10);
+		PrevDimmingPulse = CurrDimmingPulse;
+		return;
+	}
+
+	if (PrevDimmingPulse == CurrDimmingPulse) {
+		PrevDimmingPulse = CurrDimmingPulse;
+		return;
+	} else {
+		if (PrevDimmingPulse == 0) {
+			set_gpio_blic_en(1);
+			MDELAY(10);
+			set_gpio_blic_ctl(1);
+			MDELAY(5);
+		}
+
+		if( PrevDimmingPulse < CurrDimmingPulse)
+			pulse = (32 + PrevDimmingPulse) - CurrDimmingPulse;
+		else if(PrevDimmingPulse > CurrDimmingPulse)
+			pulse = PrevDimmingPulse - CurrDimmingPulse;
+
+		lcd_backlight_control(pulse);	
+		PrevDimmingPulse = CurrDimmingPulse;
+
+		return;
+	}
+	PrevDimmingPulse = CurrDimmingPulse;
+}
+#endif
 
 static void lcm_init(void)
 {
@@ -387,6 +495,9 @@ LCM_DRIVER s6d78a0_qhd_dsi_vdo_drv = {
 	.resume = lcm_resume,
 	.init_power = lcm_init_power,
 	.resume_power = lcm_resume_power,
+#ifndef BUILD_LK
+	.set_backlight  = lcm_setbacklight,
+#endif
 #if defined(LCM_DSI_CMD_MODE)
 	.update = lcm_update,
 #endif
