@@ -12,8 +12,8 @@ jobs:
     steps:
     - name: Checkout sources
       uses: actions/checkout@v2
-    - name: Install pyhton2
-      run: sudo apt-get install python2
+    - name: Install pyhton3
+      run: sudo apt-get install python3
     - name: Build the bootloader
       run: |
         export python=python2
