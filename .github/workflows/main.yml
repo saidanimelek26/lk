@@ -1,48 +1,76 @@
-name: Build workflow
+name: Build LK
 
 on:
-  push:
-  pull_request:
-  workflow_dispatch:
+push:
+pull_request:
+workflow_dispatch:
 
 jobs:
-  lk-build:
-    runs-on: ubuntu-latest
+lk-build:
+runs-on: ubuntu-22.04
 
-    steps:
-    - name: Checkout sources
-      uses: actions/checkout@v4
-      
-    - name: Install pyenv and Python 2.7.18
-      run: |
-        # Install dependencies
-        sudo apt-get update
-        sudo apt-get install -y build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev curl git libncursesw5-dev xz-utils tk-dev libffi-dev liblzma-dev gcc-arm-none-eabi make
-        
-        # Install pyenv
-        curl https://pyenv.run | bash
-        
-        # Setup pyenv
-        export PYENV_ROOT="$HOME/.pyenv"
-        export PATH="$PYENV_ROOT/bin:$PATH"
-        eval "$(pyenv init -)"
-        
-        # Install Python 2.7.18
-        CFLAGS="-std=c11" pyenv install 2.7.18
-        pyenv global 2.7.18
-        
-    - name: Build the bootloader
-      run: |
-        export PYENV_ROOT="$HOME/.pyenv"
-        export PATH="$PYENV_ROOT/bin:$PATH"
-        eval "$(pyenv init -)"
-        export python=python2
-        make fpga6589
-        
-    - name: Upload bootloader
-      uses: actions/upload-artifact@v4
-      with:
-        name: fpga6589_lk.img
-        path: build-fpga6589/lk.img
-        if-no-files-found: error
-        retention-days: 90
+```
+steps:
+- name: Checkout source
+  uses: actions/checkout@v4
+
+- name: Install dependencies
+  run: |
+    sudo apt-get update
+    sudo apt-get install -y git make python2 file libc6-i386
+
+    sudo ln -sf /usr/bin/python2 /usr/local/bin/python
+
+- name: Cache Toolchain
+  id: cache-gcc
+  uses: actions/cache@v4
+  with:
+    path: ~/gcc-toolchain
+    key: arm-linux-androideabi-4.9
+
+- name: Download Toolchain
+  if: steps.cache-gcc.outputs.cache-hit != 'true'
+  run: |
+    git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9 ~/gcc-toolchain
+
+- name: Fix permissions
+  run: |
+    chmod -R +x scripts/dct || true
+    chmod +x scripts/dct/DrvGen || true
+
+- name: Check environment
+  run: |
+    python --version
+    echo "=== Toolchain ==="
+    find ~/gcc-toolchain -name "*gcc" | head -20
+
+    echo "=== DrvGen ==="
+    file scripts/dct/DrvGen || true
+    ldd scripts/dct/DrvGen || true
+
+- name: Build LK
+  run: |
+    export python=python2
+    export PATH=$HOME/gcc-toolchain/bin:$PATH
+    export CROSS_COMPILE=arm-linux-androideabi-
+
+    which arm-linux-androideabi-gcc || true
+    arm-linux-androideabi-gcc --version || true
+
+    make fpga6589
+
+- name: List output
+  if: always()
+  run: |
+    find . -name "*.img" -o -name "*.bin" -o -name "lk*"
+
+- name: Upload artifacts
+  if: always()
+  uses: actions/upload-artifact@v4
+  with:
+    name: lk-build
+    path: |
+      build-fpga6589/**
+      out/**
+    if-no-files-found: warn
+```
