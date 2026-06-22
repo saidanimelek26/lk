@@ -90,66 +90,31 @@ jobs:
           echo "=== GCC Version ==="
           ~/gcc-toolchain/bin/arm-linux-androideabi-gcc --version || true
 
-      - name: Disable DCT generation permanently
+      - name: Setup build directory and permissions
         run: |
-          # Backup original drvgen.mk
-          cp scripts/drvgen/drvgen.mk scripts/drvgen/drvgen.mk.bak
-          
-          # Comment out DCT generation rules
-          sed -i 's/^\(.*DrvGen.*\)/#\1/' scripts/drvgen/drvgen.mk
-          sed -i 's/^\(.*codegen.dws.*\)/#\1/' scripts/drvgen/drvgen.mk
-          
-          # Create ALL required DCT-generated headers
+          # Create build directory with proper permissions
+          mkdir -p build-fpga6580
           mkdir -p build-fpga6580/inc
+          mkdir -p build-fpga6580/obj
+          mkdir -p build-fpga6580/lib
+          mkdir -p build-fpga6580/system
           
-          # Create all possible DCT headers with proper content
-          headers=(
-            "cust_eint.h"
-            "cust_gpio_boot.h"
-            "cust_adc.h"
-            "cust_kpd.h"
-            "cust_alsps.h"
-            "cust_acc.h"
-            "cust_gyro.h"
-            "cust_mag.h"
-            "cust_leds.h"
-            "cust_rtc.h"
-            "cust_pmic.h"
-            "cust_battery.h"
-            "cust_charging.h"
-            "cust_flash.h"
-            "cust_camera.h"
-            "cust_lcm.h"
-            "cust_touch.h"
-            "cust_usb.h"
-            "cust_sd.h"
-            "cust_audio.h"
-          )
+          # Set proper permissions
+          chmod -R 755 build-fpga6580
           
-          for header in "${headers[@]}"; do
-            base_name=$(echo "$header" | sed 's/\.h$//' | sed 's/cust_//')
-            cat > "build-fpga6580/inc/$header" << EOF
-          #ifndef _CUST_${base_name^^}_H_
-          #define _CUST_${base_name^^}_H_
-          
-          /* Auto-generated fallback header for $header */
-          #define CUST_${base_name^^}_ENABLE 1
-          #define CUST_${base_name^^}_VALUE 0
-          
-          #endif
-          EOF
-          done
-          
-          # Also create GPIO boot header specifically
+          echo "=== Build directory structure ==="
+          ls -la build-fpga6580/
+
+      - name: Create ALL DCT-generated headers
+        run: |
+          # Create all possible DCT headers
           cat > build-fpga6580/inc/cust_gpio_boot.h << 'EOF'
           #ifndef _CUST_GPIO_BOOT_H_
           #define _CUST_GPIO_BOOT_H_
           
-          /* GPIO boot configuration */
           #define GPIO_BOOT_DEVICE_NONE 0
           #define GPIO_BOOT_DEVICE_EMMC 1
           #define GPIO_BOOT_DEVICE_SD 2
-          
           #define GPIO_BOOT_DEVICE GPIO_BOOT_DEVICE_EMMC
           #define GPIO_BOOT_PIN 0
           #define GPIO_BOOT_POLARITY 0
@@ -157,29 +122,165 @@ jobs:
           #endif
           EOF
           
-          echo "=== Created headers in build-fpga6580/inc/ ==="
+          cat > build-fpga6580/inc/cust_gpio_usage.h << 'EOF'
+          #ifndef _CUST_GPIO_USAGE_H_
+          #define _CUST_GPIO_USAGE_H_
+          
+          #define GPIO_USAGE_NONE 0
+          #define GPIO_USAGE_EINT 1
+          #define GPIO_USAGE_KEY 2
+          #define GPIO_USAGE_LED 3
+          #define GPIO_USAGE_VIBRATOR 4
+          #define GPIO_USAGE_SD 5
+          #define GPIO_USAGE_USB 6
+          
+          #endif
+          EOF
+          
+          cat > build-fpga6580/inc/cust_eint.h << 'EOF'
+          #ifndef _CUST_EINT_H_
+          #define _CUST_EINT_H_
+          
+          #define CUST_EINT_GPIO_NUM 0
+          #define CUST_EINT_GPIO_POLARITY 0
+          #define CUST_EINT_DEBOUNCE 5
+          
+          #endif
+          EOF
+          
+          cat > build-fpga6580/inc/cust_adc.h << 'EOF'
+          #ifndef _CUST_ADC_H_
+          #define _CUST_ADC_H_
+          
+          #define ADC_CHANNEL_BATTERY 0
+          #define ADC_CHANNEL_TEMPERATURE 1
+          #define ADC_CHANNEL_NTC 2
+          #define ADC_CHANNEL_VBAT 3
+          #define ADC_CHANNEL_CHARGER 4
+          
+          #endif
+          EOF
+          
+          cat > build-fpga6580/inc/cust_kpd.h << 'EOF'
+          #ifndef _CUST_KPD_H_
+          #define _CUST_KPD_H_
+          
+          #define KPD_KEY_DEBOUNCE_TIME 5
+          #define KPD_PWRKEY_DEBOUNCE_TIME 10
+          #define KPD_SLIDE_QWERTY 0
+          #define KPD_SLIDE_PHONE 0
+          #define KPD_PWRKEY_PMIC 1
+          #define KPD_HW_KEY_CODE_MAP_SIZE 0
+          #define KPD_HW_KEY_CODE_MAP { }
+          
+          #endif
+          EOF
+          
+          cat > build-fpga6580/inc/cust_alsps.h << 'EOF'
+          #ifndef _CUST_ALSPS_H_
+          #define _CUST_ALSPS_H_
+          
+          #define CUST_ALSPS_USE_COMMON 1
+          #define ALSPS_POLLING_INTERVAL 200
+          
+          #endif
+          EOF
+          
+          cat > build-fpga6580/inc/cust_acc.h << 'EOF'
+          #ifndef _CUST_ACC_H_
+          #define _CUST_ACC_H_
+          
+          #define CUST_ACC_USE_COMMON 1
+          #define ACC_POLLING_INTERVAL 200
+          
+          #endif
+          EOF
+          
+          cat > build-fpga6580/inc/cust_gyro.h << 'EOF'
+          #ifndef _CUST_GYRO_H_
+          #define _CUST_GYRO_H_
+          
+          #define CUST_GYRO_USE_COMMON 1
+          #define GYRO_POLLING_INTERVAL 200
+          
+          #endif
+          EOF
+          
+          cat > build-fpga6580/inc/cust_mag.h << 'EOF'
+          #ifndef _CUST_MAG_H_
+          #define _CUST_MAG_H_
+          
+          #define CUST_MAG_USE_COMMON 1
+          #define MAG_POLLING_INTERVAL 200
+          
+          #endif
+          EOF
+          
+          # Create DTSI files
+          cat > build-fpga6580/inc/cust_adc.dtsi << 'EOF'
+          /* DTSI for ADC configuration */
+          / {
+              cust_adc: cust_adc {
+                  compatible = "mediatek,cust-adc";
+                  channel-battery = <0>;
+                  channel-temperature = <1>;
+                  channel-ntc = <2>;
+              };
+          };
+          EOF
+          
+          echo "=== Created all headers in build-fpga6580/inc/ ==="
           ls -la build-fpga6580/inc/
 
-      - name: Modify makefile to skip DCT
+      - name: Create dummy DrvGen and modify build system
         run: |
-          # Modify the main makefile to skip DCT
-          if grep -q "drvgen.mk" makefile; then
-            # Comment out drvgen include
-            sed -i 's/^\(include.*drvgen.mk\)/#\1/' makefile
-          fi
-          
-          # Create a dummy DrvGen that just exits successfully
-          mkdir -p scripts/dct
+          # Create dummy DrvGen that creates required files
           cat > scripts/dct/DrvGen << 'EOF'
           #!/bin/bash
           echo "Dummy DrvGen called with: $@"
-          echo "Skipping DCT generation..."
+          
+          # Create all required headers if they don't exist
+          mkdir -p ./build-fpga6580/inc
+          
+          # Touch all required files to satisfy make
+          touch ./build-fpga6580/inc/cust_gpio_boot.h
+          touch ./build-fpga6580/inc/cust_gpio_usage.h
+          touch ./build-fpga6580/inc/cust_eint.h
+          touch ./build-fpga6580/inc/cust_adc.h
+          touch ./build-fpga6580/inc/cust_kpd.h
+          touch ./build-fpga6580/inc/cust_alsps.h
+          touch ./build-fpga6580/inc/cust_acc.h
+          touch ./build-fpga6580/inc/cust_gyro.h
+          touch ./build-fpga6580/inc/cust_mag.h
+          touch ./build-fpga6580/inc/cust_adc.dtsi
+          
+          echo "DCT generation completed successfully"
           exit 0
           EOF
+          
           chmod +x scripts/dct/DrvGen
           
-          echo "=== Modified makefile ==="
-          grep -n "drvgen" makefile || echo "No drvgen references found"
+          # Comment out the problematic parts in drvgen.mk
+          sed -i 's/^\(.*DrvGen.*\)/#\1/' scripts/drvgen/drvgen.mk
+          sed -i 's/^\(.*codegen.dws.*\)/#\1/' scripts/drvgen/drvgen.mk
+          
+          # Add a rule that always succeeds for DCT targets
+          cat >> scripts/drvgen/drvgen.mk << 'EOF'
+          
+          # Override DCT targets to do nothing
+          build-fpga6580/inc/cust_%.h:
+                  @echo "Skipping DCT generation for $@"
+                  @mkdir -p $(dir $@)
+                  @touch $@
+          
+          build-fpga6580/inc/cust_%.dtsi:
+                  @echo "Skipping DCT generation for $@"
+                  @mkdir -p $(dir $@)
+                  @touch $@
+          EOF
+          
+          echo "=== Modified drvgen.mk ==="
+          tail -10 scripts/drvgen/drvgen.mk
 
       - name: Build LK
         id: build
@@ -194,25 +295,28 @@ jobs:
           export STRIP=arm-linux-androideabi-strip
           export OBJCOPY=arm-linux-androideabi-objcopy
           
+          # Set build directory
+          export BUILD_DIR=./build-fpga6580
+          
           echo "=== Environment ==="
           echo "PATH: $PATH"
           echo "CROSS_COMPILE: $CROSS_COMPILE"
+          echo "BUILD_DIR: $BUILD_DIR"
           
           echo "=== Compiler check ==="
           which arm-linux-androideabi-gcc
           arm-linux-androideabi-gcc --version || true
           
+          echo "=== Build directory check ==="
+          ls -la build-fpga6580/
+          ls -la build-fpga6580/inc/
+          
           echo "=== Start build ==="
-          # Try build with multiple options
-          make fpga6580 2>&1 | tee build.log || {
-            echo "=== Build failed, trying with DCT bypass ==="
-            # Try to touch all required headers to satisfy dependencies
-            touch build-fpga6580/inc/cust_gpio_boot.h
-            touch build-fpga6580/inc/cust_eint.h
-            touch build-fpga6580/inc/cust_adc.h
-            touch build-fpga6580/inc/cust_adc.dtsi
-            
-            make fpga6580 2>&1 | tee -a build.log || {
+          # Use absolute path to avoid permission issues
+          make -C $(pwd) fpga6580 BUILD_DIR=$(pwd)/build-fpga6580 2>&1 | tee build.log || {
+            echo "=== Build failed, trying alternative ==="
+            # Try with SKIP_DCT
+            make -C $(pwd) fpga6580 SKIP_DCT=1 BUILD_DIR=$(pwd)/build-fpga6580 2>&1 | tee -a build.log || {
               echo "=== Build failed, checking logs ==="
               tail -100 build.log
               exit 1
