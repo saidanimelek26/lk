@@ -9,7 +9,6 @@ jobs:
 lk-build:
 runs-on: ubuntu-22.04
 
-```
 steps:
 - name: Checkout source
   uses: actions/checkout@v4
