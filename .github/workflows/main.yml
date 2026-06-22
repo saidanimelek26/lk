@@ -1,4 +1,4 @@
-name: Build workflow
+name: Build LK
 
 on:
   push:
@@ -8,33 +8,49 @@ on:
 jobs:
   lk-build:
     runs-on: ubuntu-latest
+
     container:
-      image: ubuntu:26.04
+      image: python:2.7
 
     steps:
-    - name: Checkout sources
-      uses: actions/checkout@v4
-      
-    - name: Install Python 2 and dependencies
-      run: |
-        apt-get update
-        apt-get install -y python2 build-essential git make gcc-arm-none-eabi
-        ln -sf /usr/bin/python2 /usr/local/bin/python
-        
-    - name: Verify Python installation
-      run: |
-        python --version
-        which python
-        
-    - name: Build the bootloader
-      run: |
-        export python=python2
-        make fpga6589
-        
-    - name: Upload bootloader
-      uses: actions/upload-artifact@v4
-      with:
-        name: fpga6589_lk.img
-        path: build-fpga6589/lk.img
-        if-no-files-found: error
-        retention-days: 90
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y \
+            git \
+            make \
+            gcc \
+            g++ \
+            bc \
+            bison \
+            flex \
+            libssl-dev \
+            gcc-arm-none-eabi
+
+      - name: Verify environment
+        run: |
+          python --version
+          gcc --version
+          make --version
+
+      - name: Build LK
+        run: |
+          make fpga6589
+
+      - name: Find output
+        run: |
+          find . -name "*.bin" -o -name "*.img" -o -name "lk*" | sort
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: lk-build-output
+          path: |
+            build-*/lk.bin
+            build-*/lk.img
+            out/**/*.bin
+            out/**/*.img
+          if-no-files-found: warn
