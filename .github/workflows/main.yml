@@ -7,21 +7,24 @@ on:
 
 jobs:
   lk-build:
-    runs-on: ubuntu-20.04  # Still has Python 2 in repos
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:26.04
 
     steps:
     - name: Checkout sources
       uses: actions/checkout@v4
       
-    - name: Install Python 2
+    - name: Install Python 2 and dependencies
       run: |
-        sudo apt-get update
-        sudo apt-get install -y python2
-        sudo ln -s /usr/bin/python2 /usr/local/bin/python
+        apt-get update
+        apt-get install -y python2 build-essential git make gcc-arm-none-eabi
+        ln -sf /usr/bin/python2 /usr/local/bin/python
         
-    - name: Install build dependencies
+    - name: Verify Python installation
       run: |
-        sudo apt-get install -y build-essential git make gcc-arm-none-eabi
+        python --version
+        which python
         
     - name: Build the bootloader
       run: |
