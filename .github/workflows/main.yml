@@ -13,22 +13,31 @@ jobs:
     - name: Checkout sources
       uses: actions/checkout@v4
       
-    - name: Install Python 2
-      run: |
-        sudo apt-get update
-        sudo apt-get install python2 python2-dev
-        sudo ln -s /usr/bin/python2 /usr/local/bin/python || true
-    
     - name: Install build dependencies
       run: |
-        sudo apt-get install -y build-essential git make gcc-arm-none-eabi
+        sudo apt-get update
+        sudo apt-get install -y build-essential git make gcc-arm-none-eabi wget libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libncurses5-dev
         
-    - name: Set Python environment
+    - name: Build Python 2 from source
       run: |
-        echo "python=python2" >> $GITHUB_ENV
+        cd /tmp
+        wget https://www.python.org/ftp/python/2.7.18/Python-2.7.18.tgz
+        tar -xzf Python-2.7.18.tgz
+        cd Python-2.7.18
+        ./configure --prefix=/usr/local/python2 --enable-optimizations
+        make -j$(nproc)
+        sudo make install
+        sudo ln -sf /usr/local/python2/bin/python2 /usr/local/bin/python
+        
+    - name: Verify Python installation
+      run: |
+        python --version
+        which python
         
     - name: Build the bootloader
       run: |
+        export python=python2
+        PATH=/usr/local/python2/bin:$PATH
         make fpga6589
         
     - name: Upload bootloader
