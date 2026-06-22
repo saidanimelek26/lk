@@ -9,67 +9,68 @@ jobs:
 lk-build:
 runs-on: ubuntu-22.04
 
+```
 steps:
-- name: Checkout source
-  uses: actions/checkout@v4
+  - name: Checkout source
+    uses: actions/checkout@v4
 
-- name: Install dependencies
-  run: |
-    sudo apt-get update
-    sudo apt-get install -y git make python2 file libc6-i386
+  - name: Install dependencies
+    run: |
+      sudo apt-get update
+      sudo apt-get install -y git make file libc6-i386
 
-    sudo ln -sf /usr/bin/python2 /usr/local/bin/python
+  - name: Cache Toolchain
+    id: cache-gcc
+    uses: actions/cache@v4
+    with:
+      path: ~/gcc-toolchain
+      key: arm-linux-androideabi-4.9
 
-- name: Cache Toolchain
-  id: cache-gcc
-  uses: actions/cache@v4
-  with:
-    path: ~/gcc-toolchain
-    key: arm-linux-androideabi-4.9
+  - name: Download Toolchain
+    if: steps.cache-gcc.outputs.cache-hit != 'true'
+    run: |
+      git clone --depth=1 \
+        https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9 \
+        ~/gcc-toolchain
 
-- name: Download Toolchain
-  if: steps.cache-gcc.outputs.cache-hit != 'true'
-  run: |
-    git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9 ~/gcc-toolchain
+  - name: Fix permissions
+    run: |
+      chmod -R +x scripts/dct || true
+      chmod +x scripts/dct/DrvGen || true
 
-- name: Fix permissions
-  run: |
-    chmod -R +x scripts/dct || true
-    chmod +x scripts/dct/DrvGen || true
+  - name: Check toolchain
+    run: |
+      echo "=== GCC files ==="
+      find ~/gcc-toolchain -type f | grep gcc || true
 
-- name: Check environment
-  run: |
-    python --version
-    echo "=== Toolchain ==="
-    find ~/gcc-toolchain -name "*gcc" | head -20
+      echo "=== BIN directory ==="
+      ls -la ~/gcc-toolchain/bin || true
 
-    echo "=== DrvGen ==="
-    file scripts/dct/DrvGen || true
-    ldd scripts/dct/DrvGen || true
+  - name: Check DrvGen
+    run: |
+      file scripts/dct/DrvGen || true
+      ldd scripts/dct/DrvGen || true
 
-- name: Build LK
-  run: |
-    export python=python2
-    export PATH=$HOME/gcc-toolchain/bin:$PATH
-    export CROSS_COMPILE=arm-linux-androideabi-
+  - name: Build LK
+    run: |
+      export PATH=$HOME/gcc-toolchain/bin:$PATH
+      export CROSS_COMPILE=arm-linux-androideabi-
 
-    which arm-linux-androideabi-gcc || true
-    arm-linux-androideabi-gcc --version || true
+      which arm-linux-androideabi-gcc || true
+      arm-linux-androideabi-gcc --version || true
 
-    make fpga6589
+      make fpga6589
 
-- name: List output
-  if: always()
-  run: |
-    find . -name "*.img" -o -name "*.bin" -o -name "lk*"
+  - name: List output
+    if: always()
+    run: |
+      find . -name "*.img" -o -name "*.bin" -o -name "lk*" || true
 
-- name: Upload artifacts
-  if: always()
-  uses: actions/upload-artifact@v4
-  with:
-    name: lk-build
-    path: |
-      build-fpga6589/**
-      out/**
-    if-no-files-found: warn
+  - name: Upload artifacts
+    if: always()
+    uses: actions/upload-artifact@v4
+    with:
+      name: lk-build
+      path: build-fpga6589
+      if-no-files-found: warn
 ```
