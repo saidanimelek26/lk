@@ -26,136 +26,146 @@ jobs:
             python3 python3-pip \
             device-tree-compiler \
             wget unzip curl \
-            gcc-arm-linux-gnueabi \
-            binutils-arm-linux-gnueabi
+            libxml2-utils
+
+      - name: Cache GCC for Android
+        id: cache-gcc
+        uses: actions/cache@v4
+        with:
+          path: ~/gcc-toolchain
+          key: gcc-toolchain-v1
+
+      - name: Download GCC for Android
+        if: steps.cache-gcc.outputs.cache-hit != 'true'
+        run: |
+          git clone https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9 ~/gcc-toolchain
+          cd ~/gcc-toolchain
+          git checkout e9b2ab0932573a0ca90cad11ab75d9619f19c458
+
+      - name: Setup GCC toolchain
+        run: |
+          # Set up GCC path
+          echo "GCC_BIN=~/gcc-toolchain/bin" >> $GITHUB_ENV
+          
+          # Create symlinks for the build system
+          mkdir -p ~/gcc-wrapper/bin
+          
+          # Create wrapper scripts that point to the actual GCC
+          cat > ~/gcc-wrapper/bin/arm-linux-androideabi-gcc << 'EOF'
+          #!/bin/bash
+          exec ~/gcc-toolchain/bin/arm-linux-androideabi-gcc "$@"
+          EOF
+          
+          cat > ~/gcc-wrapper/bin/arm-linux-androideabi-g++ << 'EOF'
+          #!/bin/bash
+          exec ~/gcc-toolchain/bin/arm-linux-androideabi-g++ "$@"
+          EOF
+          
+          cat > ~/gcc-wrapper/bin/arm-linux-androideabi-ar << 'EOF'
+          #!/bin/bash
+          exec ~/gcc-toolchain/bin/arm-linux-androideabi-ar "$@"
+          EOF
+          
+          cat > ~/gcc-wrapper/bin/arm-linux-androideabi-ld << 'EOF'
+          #!/bin/bash
+          exec ~/gcc-toolchain/bin/arm-linux-androideabi-ld "$@"
+          EOF
+          
+          cat > ~/gcc-wrapper/bin/arm-linux-androideabi-strip << 'EOF'
+          #!/bin/bash
+          exec ~/gcc-toolchain/bin/arm-linux-androideabi-strip "$@"
+          EOF
+          
+          cat > ~/gcc-wrapper/bin/arm-linux-androideabi-objcopy << 'EOF'
+          #!/bin/bash
+          exec ~/gcc-toolchain/bin/arm-linux-androideabi-objcopy "$@"
+          EOF
+          
+          chmod +x ~/gcc-wrapper/bin/*
+          
+          echo "GCC_WRAPPER=~/gcc-wrapper/bin" >> $GITHUB_ENV
+          
+          # Verify GCC
+          echo "=== GCC Version ==="
+          ~/gcc-toolchain/bin/arm-linux-androideabi-gcc --version
+          
+          echo "=== GCC wrapper contents ==="
+          ls -la ~/gcc-wrapper/bin/
+
+      - name: Cache Android NDK
+        id: cache-ndk
+        uses: actions/cache@v4
+        with:
+          path: ~/android-ndk-r23c
+          key: ndk-r23c-v1
+
+      - name: Download Android NDK
+        if: steps.cache-ndk.outputs.cache-hit != 'true'
+        run: |
+          cd ~
+          wget -q https://dl.google.com/android/repository/android-ndk-r23c-linux.zip
+          unzip -q android-ndk-r23c-linux.zip
+          rm android-ndk-r23c-linux.zip
 
       - name: Setup Android NDK
-        id: setup-ndk
         run: |
-          NDK_VERSION="r23c"
-          NDK_ZIP="android-ndk-${NDK_VERSION}-linux.zip"
-          NDK_URL="https://dl.google.com/android/repository/${NDK_ZIP}"
+          echo "NDK_ROOT=~/android-ndk-r23c" >> $GITHUB_ENV
+          echo "NDK_BIN=~/android-ndk-r23c/toolchains/llvm/prebuilt/linux-x86_64/bin" >> $GITHUB_ENV
           
-          cd /tmp
-          if [ ! -d "/home/runner/android-ndk-${NDK_VERSION}" ]; then
-            echo "Downloading Android NDK..."
-            wget -q --show-progress ${NDK_URL} || {
-              echo "Falling back to alternative NDK version..."
-              NDK_VERSION="r21e"
-              NDK_ZIP="android-ndk-${NDK_VERSION}-linux.zip"
-              NDK_URL="https://dl.google.com/android/repository/${NDK_ZIP}"
-              wget -q --show-progress ${NDK_URL}
-            }
-            unzip -q ${NDK_ZIP}
-            rm ${NDK_ZIP}
-            mv android-ndk-* /home/runner/android-ndk-${NDK_VERSION}
-          fi
+          # Also need NDK for some tools
+          echo "PATH=$HOME/android-ndk-r23c/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH" >> $GITHUB_ENV
           
-          echo "NDK_ROOT=/home/runner/android-ndk-${NDK_VERSION}" >> $GITHUB_ENV
-          echo "NDK_BIN=/home/runner/android-ndk-${NDK_VERSION}/toolchains/llvm/prebuilt/linux-x86_64/bin" >> $GITHUB_ENV
-          
-          # Create GCC compatibility wrappers with fixed path
-          mkdir -p /home/runner/gcc-wrapper/bin
-          
-          cat > /home/runner/gcc-wrapper/bin/arm-linux-androideabi-gcc << 'EOF'
-          #!/bin/bash
-          # Find NDK bin directory
-          NDK_BIN=""
-          if [ -d "$HOME/android-ndk-r23c/toolchains/llvm/prebuilt/linux-x86_64/bin" ]; then
-            NDK_BIN="$HOME/android-ndk-r23c/toolchains/llvm/prebuilt/linux-x86_64/bin"
-          elif [ -d "$HOME/android-ndk-r21e/toolchains/llvm/prebuilt/linux-x86_64/bin" ]; then
-            NDK_BIN="$HOME/android-ndk-r21e/toolchains/llvm/prebuilt/linux-x86_64/bin"
-          else
-            # Try to find any NDK
-            NDK_BIN=$(find $HOME -path "*/toolchains/llvm/prebuilt/linux-x86_64/bin" -type d 2>/dev/null | head -1)
-          fi
-          
-          if [ -z "$NDK_BIN" ]; then
-            echo "ERROR: Cannot find NDK bin directory"
-            exit 1
-          fi
-          
-          # Use clang directly from NDK bin
-          exec "$NDK_BIN/armv7a-linux-androideabi21-clang" "$@"
-          EOF
-          
-          cat > /home/runner/gcc-wrapper/bin/arm-linux-androideabi-g++ << 'EOF'
-          #!/bin/bash
-          # Find NDK bin directory
-          NDK_BIN=""
-          if [ -d "$HOME/android-ndk-r23c/toolchains/llvm/prebuilt/linux-x86_64/bin" ]; then
-            NDK_BIN="$HOME/android-ndk-r23c/toolchains/llvm/prebuilt/linux-x86_64/bin"
-          elif [ -d "$HOME/android-ndk-r21e/toolchains/llvm/prebuilt/linux-x86_64/bin" ]; then
-            NDK_BIN="$HOME/android-ndk-r21e/toolchains/llvm/prebuilt/linux-x86_64/bin"
-          else
-            # Try to find any NDK
-            NDK_BIN=$(find $HOME -path "*/toolchains/llvm/prebuilt/linux-x86_64/bin" -type d 2>/dev/null | head -1)
-          fi
-          
-          if [ -z "$NDK_BIN" ]; then
-            echo "ERROR: Cannot find NDK bin directory"
-            exit 1
-          fi
-          
-          # Use clang++ directly from NDK bin
-          exec "$NDK_BIN/armv7a-linux-androideabi21-clang++" "$@"
-          EOF
-          
-          chmod +x /home/runner/gcc-wrapper/bin/*
-          echo "GCC_WRAPPER=/home/runner/gcc-wrapper/bin" >> $GITHUB_ENV
-          
-          # Verify NDK
-          echo "=== NDK bin contents ==="
-          ls -la /home/runner/android-ndk-${NDK_VERSION}/toolchains/llvm/prebuilt/linux-x86_64/bin/ | grep -E "armv7a|clang"
-          
-          # Verify wrapper scripts
-          echo "=== Wrapper scripts ==="
-          cat /home/runner/gcc-wrapper/bin/arm-linux-androideabi-gcc
+          echo "=== NDK Contents ==="
+          ls -la ~/android-ndk-r23c/toolchains/llvm/prebuilt/linux-x86_64/bin/ | head -20
 
-      - name: Fix script permissions
+      - name: Create valid DCT workspace
         run: |
-          find scripts -type f -name "*.sh" -exec chmod +x {} \; 2>/dev/null || true
-          find scripts/dct -type f -exec chmod +x {} \; 2>/dev/null || true
-          chmod +x makefile make-make 2>/dev/null || true
-
-      - name: Fix DrvGen binary
-        run: |
-          if [ -f "scripts/dct/DrvGen" ]; then
-            chmod +x scripts/dct/DrvGen
-            file scripts/dct/DrvGen
-            if file scripts/dct/DrvGen | grep -q "32-bit"; then
-              sudo apt-get install -y libc6-i386
-            fi
-          else
-            echo "Warning: DrvGen not found"
-          fi
-
-      - name: Prepare DCT workspace
-        run: |
-          DWS_FILE="target/fpga6580/dct/dct/codegen.dws"
-          if [ ! -f "$DWS_FILE" ]; then
-            echo "Creating DWS file..."
-            mkdir -p target/fpga6580/dct/dct
-            cat > "$DWS_FILE" << 'DWS_EOF'
+          # Create proper DCT directory structure
+          mkdir -p target/fpga6580/dct/dct
+          
+          # Create a valid workspace file
+          cat > target/fpga6580/dct/dct/codegen.dws << 'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
-          <workspace version="1.0">
-            <project name="codegen">
-              <settings>
-                <setting name="target" value="fpga6580"/>
-              </settings>
+          <workspace>
+            <project name="codegen" version="1.0">
+              <config name="target" value="fpga6580"/>
+              <config name="platform" value="mt6580"/>
+              <config name="output" value="./build-fpga6580/inc"/>
             </project>
           </workspace>
-          DWS_EOF
-          fi
+          EOF
           
+          # Create all required header files to bypass DCT
           mkdir -p build-fpga6580/inc
-          mkdir -p build-fpga6580/obj
-
-      - name: Create fallback headers
-        run: |
+          
+          # Create cust_eint.h
+          cat > build-fpga6580/inc/cust_eint.h << 'EOF'
+          #ifndef _CUST_EINT_H_
+          #define _CUST_EINT_H_
+          
+          #define CUST_EINT_GPIO_NUM 0
+          #define CUST_EINT_GPIO_POLARITY 0
+          
+          #endif
+          EOF
+          
+          # Create cust_adc.h
+          cat > build-fpga6580/inc/cust_adc.h << 'EOF'
+          #ifndef _CUST_ADC_H_
+          #define _CUST_ADC_H_
+          
+          #define ADC_CHANNEL_BATTERY 0
+          #define ADC_CHANNEL_TEMPERATURE 1
+          #define ADC_CHANNEL_NTC 2
+          
+          #endif
+          EOF
+          
+          # Create cust_kpd.h
           cat > build-fpga6580/inc/cust_kpd.h << 'EOF'
           #ifndef _CUST_KPD_H_
           #define _CUST_KPD_H_
+          
           #define KPD_KEY_DEBOUNCE_TIME 5
           #define KPD_PWRKEY_DEBOUNCE_TIME 10
           #define KPD_SLIDE_QWERTY 0
@@ -163,50 +173,94 @@ jobs:
           #define KPD_PWRKEY_PMIC 1
           #define KPD_HW_KEY_CODE_MAP_SIZE 0
           #define KPD_HW_KEY_CODE_MAP { }
+          
           #endif
           EOF
           
-          cat > build-fpga6580/inc/cust_adc.h << 'EOF'
-          #ifndef _CUST_ADC_H_
-          #define _CUST_ADC_H_
-          #define ADC_CHANNEL_BATTERY 0
-          #define ADC_CHANNEL_TEMPERATURE 1
+          # Create cust_alsps.h
+          cat > build-fpga6580/inc/cust_alsps.h << 'EOF'
+          #ifndef _CUST_ALSPS_H_
+          #define _CUST_ALSPS_H_
+          
+          #define CUST_ALSPS_USE_COMMON 1
+          
           #endif
           EOF
           
-          echo "Fallback headers created in build-fpga6580/inc/"
+          # Create cust_acc.h
+          cat > build-fpga6580/inc/cust_acc.h << 'EOF'
+          #ifndef _CUST_ACC_H_
+          #define _CUST_ACC_H_
+          
+          #define CUST_ACC_USE_COMMON 1
+          
+          #endif
+          EOF
+          
+          # Create cust_gyro.h
+          cat > build-fpga6580/inc/cust_gyro.h << 'EOF'
+          #ifndef _CUST_GYRO_H_
+          #define _CUST_GYRO_H_
+          
+          #define CUST_GYRO_USE_COMMON 1
+          
+          #endif
+          EOF
+          
+          # Create cust_mag.h
+          cat > build-fpga6580/inc/cust_mag.h << 'EOF'
+          #ifndef _CUST_MAG_H_
+          #define _CUST_MAG_H_
+          
+          #define CUST_MAG_USE_COMMON 1
+          
+          #endif
+          EOF
+          
+          echo "All required headers created in build-fpga6580/inc/"
+          ls -la build-fpga6580/inc/
+
+      - name: Fix DrvGen binary
+        run: |
+          if [ -f "scripts/dct/DrvGen" ]; then
+            chmod +x scripts/dct/DrvGen
+            file scripts/dct/DrvGen
+            # Install 32-bit libraries if needed
+            if file scripts/dct/DrvGen | grep -q "32-bit"; then
+              sudo apt-get install -y libc6-i386
+            fi
+          else
+            echo "Warning: DrvGen not found"
+          fi
 
       - name: Build LK
         id: build
         run: |
-          export PATH=$GCC_WRAPPER:$NDK_BIN:$PATH
+          # Set up environment with GCC wrapper first
+          export PATH=$HOME/gcc-wrapper/bin:$PATH
           export CROSS_COMPILE=arm-linux-androideabi-
           export CC=arm-linux-androideabi-gcc
           export CXX=arm-linux-androideabi-g++
           export AR=arm-linux-androideabi-ar
           export LD=arm-linux-androideabi-ld
           export STRIP=arm-linux-androideabi-strip
+          export OBJCOPY=arm-linux-androideabi-objcopy
+          
+          # Add NDK for any needed tools
+          export PATH=$HOME/android-ndk-r23c/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
           
           echo "=== Environment ==="
           echo "PATH: $PATH"
           echo "CROSS_COMPILE: $CROSS_COMPILE"
           
           echo "=== Compiler check ==="
-          which arm-linux-androideabi-gcc || echo "GCC not found"
-          arm-linux-androideabi-gcc --version 2>&1 | head -5 || echo "Version check failed"
+          which arm-linux-androideabi-gcc
+          arm-linux-androideabi-gcc --version
           
           echo "=== Start build ==="
-          make fpga6580 2>&1 | tee build.log || {
-            echo "=== Build failed with DCT, trying alternative ==="
-            # Try to bypass DCT generation
-            touch build-fpga6580/inc/cust_eint.h
-            touch build-fpga6580/inc/cust_adc.h  
-            touch build-fpga6580/inc/cust_kpd.h
-            touch build-fpga6580/inc/cust_alsps.h
-            touch build-fpga6580/inc/cust_acc.h
-            touch build-fpga6580/inc/cust_gyro.h
-            touch build-fpga6580/inc/cust_mag.h
-            
+          # Try build with SKIP_DCT
+          make fpga6580 SKIP_DCT=1 2>&1 | tee build.log || {
+            echo "=== Build failed, trying without SKIP_DCT ==="
             make fpga6580 2>&1 | tee -a build.log || {
               echo "=== Build failed, checking logs ==="
               tail -100 build.log
@@ -221,7 +275,7 @@ jobs:
           ls -la build-fpga6580/ 2>/dev/null || echo "Build directory not found"
           
           echo "=== Build artifacts ==="
-          find . -type f \( -name "*.img" -o -name "*.bin" -o -name "*.elf" -o -name "lk" -o -name "*.axf" \) 2>/dev/null | while read f; do
+          find . -type f \( -name "*.img" -o -name "*.bin" -o -name "*.elf" -o -name "lk" -o -name "*.axf" -o -name "*.ko" \) 2>/dev/null | while read f; do
             echo "Found: $f ($(du -h "$f" | cut -f1))"
           done
           
