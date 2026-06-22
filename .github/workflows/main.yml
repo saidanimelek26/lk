@@ -1,0 +1,40 @@
+name: Build workflow
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lk-build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout sources
+      uses: actions/checkout@v4
+      
+    - name: Install Python 2
+      run: |
+        sudo apt-get update
+        sudo apt-get install python2 python2-dev
+        sudo ln -s /usr/bin/python2 /usr/local/bin/python || true
+    
+    - name: Install build dependencies
+      run: |
+        sudo apt-get install -y build-essential git make gcc-arm-none-eabi
+        
+    - name: Set Python environment
+      run: |
+        echo "python=python2" >> $GITHUB_ENV
+        
+    - name: Build the bootloader
+      run: |
+        make fpga6589
+        
+    - name: Upload bootloader
+      uses: actions/upload-artifact@v4
+      with:
+        name: fpga6589_lk.img
+        path: build-fpga6589/lk.img
+        if-no-files-found: error
+        retention-days: 90
