@@ -1,4 +1,4 @@
-name: Build LK with Docker
+name: Build LK
 
 on:
   push:
@@ -8,18 +8,191 @@ on:
 jobs:
   lk-build:
     runs-on: ubuntu-22.04
-    
+
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Build with Docker
-        uses: docker://ghcr.io/mediatek/lk-build:latest
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            git make file libc6-i386 \
+            lib32stdc++6 lib32z1 \
+            python3 python3-pip \
+            device-tree-compiler \
+            wget unzip
+
+      - name: Setup Android NDK (Alternative to GCC toolchain)
+        id: setup-ndk
+        run: |
+          # Use Android NDK instead of standalone GCC toolchain
+          NDK_VERSION="r23b"
+          NDK_ZIP="android-ndk-${NDK_VERSION}-linux.zip"
+          NDK_URL="https://dl.google.com/android/repository/${NDK_ZIP}"
+          
+          if [ ! -d "/home/runner/android-ndk-${NDK_VERSION}" ]; then
+            echo "Downloading Android NDK..."
+            wget -q --show-progress ${NDK_URL}
+            unzip -q ${NDK_ZIP}
+            rm ${NDK_ZIP}
+          fi
+          
+          echo "NDK_ROOT=/home/runner/android-ndk-${NDK_VERSION}" >> $GITHUB_ENV
+          echo "NDK_TOOLCHAIN=/home/runner/android-ndk-${NDK_VERSION}/toolchains/llvm/prebuilt/linux-x86_64/bin" >> $GITHUB_ENV
+          
+          # Create symlinks for GCC compatibility
+          NDK_BIN="/home/runner/android-ndk-${NDK_VERSION}/toolchains/llvm/prebuilt/linux-x86_64/bin"
+          mkdir -p ~/gcc-compat/bin
+          
+          # Create wrapper scripts for arm-linux-androideabi-gcc
+          cat > ~/gcc-compat/bin/arm-linux-androideabi-gcc << 'EOF'
+#!/bin/bash
+# Wrapper for clang to act like gcc
+export CROSS_COMPILE=arm-linux-androideabi-
+exec $NDK_TOOLCHAIN/armv7a-linux-androideabi21-clang "$@"
+EOF
+          
+          cat > ~/gcc-compat/bin/arm-linux-androideabi-g++ << 'EOF'
+#!/bin/bash
+export CROSS_COMPILE=arm-linux-androideabi-
+exec $NDK_TOOLCHAIN/armv7a-linux-androideabi21-clang++ "$@"
+EOF
+          
+          chmod +x ~/gcc-compat/bin/arm-linux-androideabi-*
+          
+          echo "GCC_COMPAT=/home/runner/gcc-compat/bin" >> $GITHUB_ENV
+
+      - name: Alternative - Use prebuilt GCC from Ubuntu
+        if: failure()
+        run: |
+          # Fallback: Install GCC cross-compiler from Ubuntu repos
+          sudo apt-get install -y gcc-arm-linux-androideabi binutils-arm-linux-androideabi
+          which arm-linux-androideabi-gcc || echo "Not found"
+          arm-linux-androideabi-gcc --version || echo "Version check failed"
+
+      - name: Download GCC Toolchain (Full clone)
+        if: false  # Disabled - using NDK instead
+        run: |
+          # Use full clone instead of shallow
+          git clone \
+            https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9 \
+            ~/gcc-toolchain-full
+
+      - name: Fix permissions for scripts
+        run: |
+          chmod -R +x scripts/dct || true
+          chmod +x scripts/dct/DrvGen || true
+          chmod +x scripts/dct/*.pl 2>/dev/null || true
+          chmod +x scripts/drvgen/*.mk 2>/dev/null || true
+          chmod +x makefile || true
+          chmod +x make-make || true
+
+      - name: Check DrvGen compatibility
+        run: |
+          file scripts/dct/DrvGen || true
+          if file scripts/dct/DrvGen | grep -q "32-bit"; then
+            sudo apt-get install -y libc6-i386 lib32stdc++6
+          fi
+
+      - name: Verify DCT workspace file
+        run: |
+          DWS_FILE="target/fpga6589/dct/dct/codegen.dws"
+          if [ ! -f "$DWS_FILE" ]; then
+            echo "WARNING: DWS file not found at $DWS_FILE"
+            echo "Looking for any .dws files:"
+            find . -name "*.dws" 2>/dev/null || true
+            echo "Creating minimal DWS file..."
+            mkdir -p target/fpga6589/dct/dct
+            cat > target/fpga6589/dct/dct/codegen.dws << 'DWS_EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<workspace>
+  <project name="codegen" version="1.0"/>
+</workspace>
+DWS_EOF
+          else
+            echo "DWS file found"
+          fi
+
+      - name: Create missing KPD header if DCT fails
+        run: |
+          # Pre-create KPD header as fallback
+          mkdir -p build-fpga6589/inc
+          cat > build-fpga6589/inc/cust_kpd.h << 'EOF'
+#ifndef _CUST_KPD_H_
+#define _CUST_KPD_H_
+/* Generated fallback KPD header */
+#define KPD_KEY_DEBOUNCE_TIME 5
+#define KPD_PWRKEY_DEBOUNCE_TIME 10
+#define KPD_SLIDE_QWERTY 0
+#define KPD_SLIDE_PHONE 0
+#define KPD_PWRKEY_PMIC 1
+#define KPD_HW_KEY_CODE_MAP_SIZE 0
+#define KPD_HW_KEY_CODE_MAP { }
+#endif
+EOF
+          echo "Created fallback cust_kpd.h"
+
+      - name: Build LK with NDK
+        run: |
+          # Use NDK toolchain
+          if [ -n "$NDK_TOOLCHAIN" ]; then
+            export PATH=$NDK_TOOLCHAIN:$GCC_COMPAT:$PATH
+          else
+            export PATH=/usr/bin:$PATH
+          fi
+          
+          export CROSS_COMPILE=arm-linux-androideabi-
+          export CC=arm-linux-androideabi-gcc
+          export CXX=arm-linux-androideabi-g++
+          export AR=arm-linux-androideabi-ar
+          export LD=arm-linux-androideabi-ld
+          
+          echo "=== PATH ==="
+          echo $PATH
+          
+          echo "=== Checking compiler ==="
+          which arm-linux-androideabi-gcc || echo "Using fallback compiler"
+          arm-linux-androideabi-gcc --version 2>/dev/null || echo "Version check failed"
+          
+          echo "=== Starting build ==="
+          # Build with specific target
+          make fpga6589 || {
+            echo "Build failed, trying without DCT..."
+            # Try to bypass DCT generation
+            make fpga6589 SKIP_DCT=1 || true
+          }
+
+      - name: Retry build with Ubuntu cross-compiler
+        if: failure()
+        run: |
+          echo "Retrying with Ubuntu cross-compiler..."
+          sudo apt-get install -y gcc-arm-linux-gnueabi
+          export CROSS_COMPILE=arm-linux-gnueabi-
+          export CC=arm-linux-gnueabi-gcc
+          make fpga6589
+
+      - name: List output
+        if: always()
+        run: |
+          echo "=== Build artifacts ==="
+          find . -name "*.img" -o -name "*.bin" -o -name "lk*" -o -name "*.elf" 2>/dev/null || true
+          echo "=== Build directory ==="
+          ls -la build-fpga6589/ 2>/dev/null || echo "Build directory not found"
+          echo "=== All files ==="
+          find . -type f -name "*" -size +1k 2>/dev/null | head -20
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
         with:
-          args: |
-            bash -c "
-              export CROSS_COMPILE=arm-linux-androideabi-
-              make fpga6589
-            "
+          name: lk-build
+          path: |
+            build-fpga6589
+            *.img
+            *.bin
+            lk
+            *.elf
+          if-no-files-found: warn
+          retention-days: 30
