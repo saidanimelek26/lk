@@ -107,28 +107,28 @@ jobs:
 
       - name: Prepare DCT workspace
         run: |
-          DWS_FILE="target/fpga6589/dct/dct/codegen.dws"
+          DWS_FILE="target/fpga6580/dct/dct/codegen.dws"
           if [ ! -f "$DWS_FILE" ]; then
             echo "Creating DWS file..."
-            mkdir -p target/fpga6589/dct/dct
+            mkdir -p target/fpga6580/dct/dct
             cat > "$DWS_FILE" << 'DWS_EOF'
           <?xml version="1.0" encoding="UTF-8"?>
           <workspace version="1.0">
             <project name="codegen">
               <settings>
-                <setting name="target" value="fpga6589"/>
+                <setting name="target" value="fpga6580"/>
               </settings>
             </project>
           </workspace>
           DWS_EOF
           fi
           
-          mkdir -p build-fpga6589/inc
-          mkdir -p build-fpga6589/obj
+          mkdir -p build-fpga6580/inc
+          mkdir -p build-fpga6580/obj
 
       - name: Create fallback headers
         run: |
-          cat > build-fpga6589/inc/cust_kpd.h << 'EOF'
+          cat > build-fpga6580/inc/cust_kpd.h << 'EOF'
           #ifndef _CUST_KPD_H_
           #define _CUST_KPD_H_
           #define KPD_KEY_DEBOUNCE_TIME 5
@@ -141,7 +141,7 @@ jobs:
           #endif
           EOF
           
-          cat > build-fpga6589/inc/cust_adc.h << 'EOF'
+          cat > build-fpga6580/inc/cust_adc.h << 'EOF'
           #ifndef _CUST_ADC_H_
           #define _CUST_ADC_H_
           #define ADC_CHANNEL_BATTERY 0
@@ -149,7 +149,7 @@ jobs:
           #endif
           EOF
           
-          echo "Fallback headers created in build-fpga6589/inc/"
+          echo "Fallback headers created in build-fpga6580/inc/"
 
       - name: Build LK
         id: build
@@ -171,9 +171,9 @@ jobs:
           arm-linux-androideabi-gcc --version 2>&1 | head -5 || echo "Version check failed"
           
           echo "=== Start build ==="
-          make fpga6589 2>&1 | tee build.log || {
+          make fpga6580 2>&1 | tee build.log || {
             echo "=== Build failed, attempting with skip DCT ==="
-            make fpga6589 SKIP_DCT=1 2>&1 | tee -a build.log || {
+            make fpga6580 SKIP_DCT=1 2>&1 | tee -a build.log || {
               echo "=== Build failed, checking logs ==="
               tail -100 build.log
               exit 1
@@ -184,7 +184,7 @@ jobs:
         if: always()
         run: |
           echo "=== Build directory ==="
-          ls -la build-fpga6589/ 2>/dev/null || echo "Build directory not found"
+          ls -la build-fpga6580/ 2>/dev/null || echo "Build directory not found"
           
           echo "=== Build artifacts ==="
           find . -type f \( -name "*.img" -o -name "*.bin" -o -name "*.elf" -o -name "lk" -o -name "*.axf" \) 2>/dev/null | while read f; do
@@ -203,7 +203,7 @@ jobs:
         with:
           name: lk-build-output
           path: |
-            build-fpga6589/
+            build-fpga6580/
             build.log
             lk
             *.img
@@ -220,6 +220,6 @@ jobs:
           name: build-logs
           path: |
             build.log
-            build-fpga6589/*.log
+            build-fpga6580/*.log
             scripts/dct/*.log
           retention-days: 7
