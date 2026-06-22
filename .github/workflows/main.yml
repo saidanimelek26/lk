@@ -54,38 +54,63 @@ jobs:
           echo "NDK_ROOT=/home/runner/android-ndk-${NDK_VERSION}" >> $GITHUB_ENV
           echo "NDK_BIN=/home/runner/android-ndk-${NDK_VERSION}/toolchains/llvm/prebuilt/linux-x86_64/bin" >> $GITHUB_ENV
           
-          # Create GCC compatibility wrappers
+          # Create GCC compatibility wrappers with fixed path
           mkdir -p /home/runner/gcc-wrapper/bin
           
           cat > /home/runner/gcc-wrapper/bin/arm-linux-androideabi-gcc << 'EOF'
           #!/bin/bash
-          TOOLCHAIN_DIR=$(dirname $(dirname $(realpath $0)))
-          NDK_BIN=$(find ${TOOLCHAIN_DIR%/gcc-wrapper} -path "*/toolchains/llvm/prebuilt/*/bin" -type d | head -1)
-          if [ -z "$NDK_BIN" ]; then
-            if [ -d "$HOME/android-ndk-*/toolchains/llvm/prebuilt/linux-x86_64/bin" ]; then
-              NDK_BIN=$(ls -d $HOME/android-ndk-*/toolchains/llvm/prebuilt/linux-x86_64/bin | head -1)
-            fi
+          # Find NDK bin directory
+          NDK_BIN=""
+          if [ -d "$HOME/android-ndk-r23c/toolchains/llvm/prebuilt/linux-x86_64/bin" ]; then
+            NDK_BIN="$HOME/android-ndk-r23c/toolchains/llvm/prebuilt/linux-x86_64/bin"
+          elif [ -d "$HOME/android-ndk-r21e/toolchains/llvm/prebuilt/linux-x86_64/bin" ]; then
+            NDK_BIN="$HOME/android-ndk-r21e/toolchains/llvm/prebuilt/linux-x86_64/bin"
+          else
+            # Try to find any NDK
+            NDK_BIN=$(find $HOME -path "*/toolchains/llvm/prebuilt/linux-x86_64/bin" -type d 2>/dev/null | head -1)
           fi
-          exec $NDK_BIN/armv7a-linux-androideabi21-clang "$@"
+          
+          if [ -z "$NDK_BIN" ]; then
+            echo "ERROR: Cannot find NDK bin directory"
+            exit 1
+          fi
+          
+          # Use clang directly from NDK bin
+          exec "$NDK_BIN/armv7a-linux-androideabi21-clang" "$@"
           EOF
           
           cat > /home/runner/gcc-wrapper/bin/arm-linux-androideabi-g++ << 'EOF'
           #!/bin/bash
-          TOOLCHAIN_DIR=$(dirname $(dirname $(realpath $0)))
-          NDK_BIN=$(find ${TOOLCHAIN_DIR%/gcc-wrapper} -path "*/toolchains/llvm/prebuilt/*/bin" -type d | head -1)
-          if [ -z "$NDK_BIN" ]; then
-            if [ -d "$HOME/android-ndk-*/toolchains/llvm/prebuilt/linux-x86_64/bin" ]; then
-              NDK_BIN=$(ls -d $HOME/android-ndk-*/toolchains/llvm/prebuilt/linux-x86_64/bin | head -1)
-            fi
+          # Find NDK bin directory
+          NDK_BIN=""
+          if [ -d "$HOME/android-ndk-r23c/toolchains/llvm/prebuilt/linux-x86_64/bin" ]; then
+            NDK_BIN="$HOME/android-ndk-r23c/toolchains/llvm/prebuilt/linux-x86_64/bin"
+          elif [ -d "$HOME/android-ndk-r21e/toolchains/llvm/prebuilt/linux-x86_64/bin" ]; then
+            NDK_BIN="$HOME/android-ndk-r21e/toolchains/llvm/prebuilt/linux-x86_64/bin"
+          else
+            # Try to find any NDK
+            NDK_BIN=$(find $HOME -path "*/toolchains/llvm/prebuilt/linux-x86_64/bin" -type d 2>/dev/null | head -1)
           fi
-          exec $NDK_BIN/armv7a-linux-androideabi21-clang++ "$@"
+          
+          if [ -z "$NDK_BIN" ]; then
+            echo "ERROR: Cannot find NDK bin directory"
+            exit 1
+          fi
+          
+          # Use clang++ directly from NDK bin
+          exec "$NDK_BIN/armv7a-linux-androideabi21-clang++" "$@"
           EOF
           
           chmod +x /home/runner/gcc-wrapper/bin/*
           echo "GCC_WRAPPER=/home/runner/gcc-wrapper/bin" >> $GITHUB_ENV
           
           # Verify NDK
-          ls -la /home/runner/android-ndk-${NDK_VERSION}/toolchains/llvm/prebuilt/linux-x86_64/bin/ | head -20
+          echo "=== NDK bin contents ==="
+          ls -la /home/runner/android-ndk-${NDK_VERSION}/toolchains/llvm/prebuilt/linux-x86_64/bin/ | grep -E "armv7a|clang"
+          
+          # Verify wrapper scripts
+          echo "=== Wrapper scripts ==="
+          cat /home/runner/gcc-wrapper/bin/arm-linux-androideabi-gcc
 
       - name: Fix script permissions
         run: |
@@ -172,8 +197,17 @@ jobs:
           
           echo "=== Start build ==="
           make fpga6580 2>&1 | tee build.log || {
-            echo "=== Build failed, attempting with skip DCT ==="
-            make fpga6580 SKIP_DCT=1 2>&1 | tee -a build.log || {
+            echo "=== Build failed with DCT, trying alternative ==="
+            # Try to bypass DCT generation
+            touch build-fpga6580/inc/cust_eint.h
+            touch build-fpga6580/inc/cust_adc.h  
+            touch build-fpga6580/inc/cust_kpd.h
+            touch build-fpga6580/inc/cust_alsps.h
+            touch build-fpga6580/inc/cust_acc.h
+            touch build-fpga6580/inc/cust_gyro.h
+            touch build-fpga6580/inc/cust_mag.h
+            
+            make fpga6580 2>&1 | tee -a build.log || {
               echo "=== Build failed, checking logs ==="
               tail -100 build.log
               exit 1
