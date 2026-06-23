@@ -54,6 +54,18 @@
  * bridge it to the older mt6589 headers without modifying those headers.
  * ====================================================================== */
 
+// ============================================================
+// MSDC DEFINITIONS (if missing)
+// ============================================================
+
+#ifndef MSDC_CFG
+#define MSDC_CFG        0
+#endif
+
+#ifndef MSDC_CFG_PIO
+#define MSDC_CFG_PIO    (1 << 0)
+#endif
+
 /* BUG_ON / WARN_ON */
 #ifndef BUG_ON
 #define BUG_ON(cond) \
