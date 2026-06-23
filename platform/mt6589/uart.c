@@ -30,6 +30,7 @@
 #include <platform/boot_mode.h>
 #include <platform/mt_gpio.h>
 #include <platform/sync_write.h>
+#include <platform/bootarg.h>
 
 #define CONFIG_BAUDRATE 		921600
 
@@ -83,6 +84,8 @@ unsigned int g_brg;
 #else
 #define UART_SRC_CLK 26000000
 #endif
+
+extern boot_arg_t *g_boot_arg;
 
 int mtk_uart_power_on(MTK_UART uart)
 {
@@ -235,7 +238,6 @@ void uart_puts(const char *s)
 
 #ifdef __ENABLE_UART_LOG_SWITCH_FEATURE__
 
-extern BOOT_ARGUMENT *g_boot_arg;
 int get_uart_port_id(void)
 {	
 	unsigned int mode = 0;
@@ -296,4 +298,3 @@ int get_uart_port_id(void)
 	// Dummy function case
 }
 #endif
-
