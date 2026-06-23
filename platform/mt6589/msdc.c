@@ -64,6 +64,7 @@
 #error "incorrect max sg buffer size"
 #endif
 
+
  
 typedef struct {
     int    autocmd;
@@ -1952,7 +1953,7 @@ done:
 }
 #endif
 
-void msdc_config_clksrc(struct mmc_host *host, clk_source_t clksrc)
+void msdc_config_clksrc(struct mmc_host *host, unsigned int clksrc)
 {
     u32 clks[] = {200000000};
 	#if 0 // PLL manager will set MT6588 default clock source . CHECK ME
@@ -3064,7 +3065,8 @@ int msdc_init(struct mmc_host *host, int id)
     bd_t *bd;
     msdc_priv_t *priv;
     struct dma_config *cfg;
-    clk_source_t clksrc;
+    unsigned int clksrc;
+
 
     printf("[%s]: start\n", __func__);
     clksrc = msdc_cap.clk_src;
