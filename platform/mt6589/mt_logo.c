@@ -42,8 +42,7 @@
 /* show logo header file */
 #include <platform/show_logo_common.h>
 #include <decompress_common.h>
-#include <show_animation_common.h>
-
+#include <platform/show_animation_common.h>
 
 LCM_SCREEN_T phical_screen;
 void  *logo_addr = NULL;
