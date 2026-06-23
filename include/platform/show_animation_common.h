@@ -42,6 +42,105 @@
 #include "decompress_common.h"
 #include "cust_display.h"
 
+// ============================================================
+// MISSING DEFINITIONS ADDED HERE
+// ============================================================
+
+#ifndef LCM_SCREEN_T_DEFINED
+#define LCM_SCREEN_T_DEFINED
+
+typedef struct {
+    unsigned int width;
+    unsigned int height;
+    unsigned int fb_size;
+    unsigned int fill_dst_bits;
+    unsigned int needAllign;
+    unsigned int allignWidth;
+    unsigned int need180Adjust;
+    unsigned int rotation;
+} LCM_SCREEN_T;
+
+#endif
+
+#ifndef RECT_REGION_T_DEFINED
+#define RECT_REGION_T_DEFINED
+
+typedef struct {
+    unsigned int left;
+    unsigned int top;
+    unsigned int right;
+    unsigned int bottom;
+} RECT_REGION_T;
+
+#endif
+
+/* Default values for animation regions (if not defined in cust_display.h) */
+#ifndef BAR_LEFT
+#define BAR_LEFT        0
+#endif
+
+#ifndef BAR_TOP
+#define BAR_TOP         0
+#endif
+
+#ifndef BAR_RIGHT
+#define BAR_RIGHT       100
+#endif
+
+#ifndef BAR_BOTTOM
+#define BAR_BOTTOM      100
+#endif
+
+#ifndef PERCENT_LEFT
+#define PERCENT_LEFT    0
+#endif
+
+#ifndef PERCENT_TOP
+#define PERCENT_TOP     0
+#endif
+
+#ifndef PERCENT_RIGHT
+#define PERCENT_RIGHT   100
+#endif
+
+#ifndef PERCENT_BOTTOM
+#define PERCENT_BOTTOM  100
+#endif
+
+#ifndef NUMBER_LEFT
+#define NUMBER_LEFT     0
+#endif
+
+#ifndef NUMBER_TOP
+#define NUMBER_TOP      0
+#endif
+
+#ifndef NUMBER_RIGHT
+#define NUMBER_RIGHT    100
+#endif
+
+#ifndef NUMBER_BOTTOM
+#define NUMBER_BOTTOM   100
+#endif
+
+#ifndef TOP_ANIMATION_LEFT
+#define TOP_ANIMATION_LEFT   0
+#endif
+
+#ifndef TOP_ANIMATION_TOP
+#define TOP_ANIMATION_TOP    0
+#endif
+
+#ifndef TOP_ANIMATION_RIGHT
+#define TOP_ANIMATION_RIGHT  100
+#endif
+
+#ifndef TOP_ANIMATION_BOTTOM
+#define TOP_ANIMATION_BOTTOM 100
+#endif
+
+// ============================================================
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -70,32 +169,25 @@ static const int number_pic_size = (NUMBER_RIGHT - NUMBER_LEFT)*(NUMBER_BOTTOM -
 // line parameter
 static const int line_pic_size = (TOP_ANIMATION_RIGHT - TOP_ANIMATION_LEFT)*4;
 
-
-
 void fill_animation_logo(unsigned int index, void *fill_addr, void * dec_logo_addr, void * logo_addr, LCM_SCREEN_T phical_screen);
 void fill_animation_prog_bar(RECT_REGION_T rect_bar,
                        unsigned int fgColor,
                        unsigned int start_div, unsigned int occupied_div,
                         void *fill_addr, LCM_SCREEN_T phical_screen);
 
-
 void fill_animation_dynamic(unsigned int index, RECT_REGION_T rect, void *fill_addr, void * dec_logo_addr, void * logo_addr, LCM_SCREEN_T phical_screen);
 void fill_animation_number(unsigned int index, unsigned int number_position, void *fill_addr,  void * logo_addr, LCM_SCREEN_T phical_screen);
 void fill_animation_line(unsigned int index, unsigned int capacity_grids, void *fill_addr,  void * logo_addr, LCM_SCREEN_T phical_screen);
 
-
 void fill_animation_battery_old(unsigned int capacity, void *fill_addr, void * dec_logo_addr, void * logo_addr, LCM_SCREEN_T phical_screen);                               
 void fill_animation_battery_new(unsigned int capacity, void *fill_addr, void * dec_logo_addr, void * logo_addr, LCM_SCREEN_T phical_screen);
-
 
 /* public interface function     */
 void fill_animation_battery_by_ver(unsigned int capacity, void *fill_addr, void * dec_logo_addr, void * logo_addr,
                         LCM_SCREEN_T phical_screen, int version);
 
-
-
 #ifdef __cplusplus
 }
 #endif
 
-#endif
+#endif /* _SHOW_ANIMATION_COMMON_H */
