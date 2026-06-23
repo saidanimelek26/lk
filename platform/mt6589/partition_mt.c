@@ -1,4 +1,4 @@
-#include <mt_partition.h>
+#include "mt_partition.h"
 #include <stdint.h>
 #include <platform/errno.h>
 #include "pmt.h"
