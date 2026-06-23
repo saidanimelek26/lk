@@ -209,6 +209,11 @@ int get_uart_port_id(void)
 	return 1;
 }
 
+int get_meta_port_id(void)
+{
+	return 1;
+}
+
 void custom_port_in_kernel(BOOTMODE boot_mode, char *command)
 {
 }
