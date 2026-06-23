@@ -43,6 +43,30 @@ static UINT32 fb_size      = 0;
 static UINT32 fb_offset_logo = 0; // counter of fb_size
 static UINT32 fb_isdirty   = 0;
 
+// ============================================================
+//  Graphics Display Format (GDF)
+// ============================================================
+
+#ifndef GDF_16BIT_565RGB
+#define GDF_16BIT_565RGB    0x01
+#endif
+
+#ifndef GDF_16BIT_ARGB1555
+#define GDF_16BIT_ARGB1555  0x02
+#endif
+
+#ifndef GDF_16BIT_ARGB4444
+#define GDF_16BIT_ARGB4444  0x03
+#endif
+
+#ifndef GDF_24BIT_RGB888
+#define GDF_24BIT_RGB888    0x04
+#endif
+
+#ifndef GDF_32BIT_ARGB8888
+#define GDF_32BIT_ARGB8888  0x05
+#endif
+
 // ---------------------------------------------------------------------------
 //  Local Variables
 // ---------------------------------------------------------------------------
