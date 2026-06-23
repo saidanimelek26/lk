@@ -36,10 +36,6 @@
 #include "cust_msdc.h"
 #include "msdc.h"
 
-#ifndef MSDC_MAX_NUM
-#define MSDC_MAX_NUM 1
-#endif
-
 struct msdc_cust msdc_cap[MSDC_MAX_NUM] =
 {
     {
@@ -53,18 +49,4 @@ struct msdc_cust msdc_cap[MSDC_MAX_NUM] =
         .data_offset  = 0,                     /* data address offset */
         .flags        = MSDC_HIGHSPEED | MSDC_DDR, /* flags */
     }
-#if (defined(MMC_MSDC_DRV_CTP) && !defined(FPGA_PLATFORM))
-    ,
-    {
-        .clk_src      = MSDC1_CLKSRC_DEFAULT,  /* host clock source */
-        .cmd_edge     = MSDC_SMPL_RISING,      /* command latch edge */
-        .data_edge    = MSDC_SMPL_RISING,      /* data latch edge */
-        .clk_drv      = MSDC_DRVN_GEAR1,       /* clock pad driving */
-        .cmd_drv      = MSDC_DRVN_GEAR1,       /* command pad driving */
-        .dat_drv      = MSDC_DRVN_GEAR1,       /* data pad driving */
-        .data_pins    = 4,                     /* data pins */
-        .data_offset  = 0,                     /* data address offset */
-        .flags        = MSDC_HIGHSPEED | MSDC_UHS1 | MSDC_DDR, /* flags */
-    }
-#endif
 };
