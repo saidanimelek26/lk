@@ -39,6 +39,10 @@ jobs:
           echo "Toolchain already cached, skipping clone."
         fi
 
+    - name: Fix DrvGen permissions
+      run: |
+        chmod +x scripts/dct/DrvGen
+
     - name: Build LK
       run: |
         export python=python2
