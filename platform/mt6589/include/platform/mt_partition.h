@@ -5,7 +5,7 @@
 
 
 #include <platform/part.h>
-#include <partition_define.h>
+#include "include/platform/partition_define.h"
 #include <platform/mt_typedefs.h>
 
 #define NAND_WRITE_SIZE	 2048
