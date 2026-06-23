@@ -2,21 +2,60 @@
 #define __MT_PARTITION_H__
 
 #include <platform/part.h>
-#include <platform/partition_define.h>
 #include <platform/mt_typedefs.h>
+
+// ============================================================
+// PARTITION DEFINITIONS (merged from partition_define.h)
+// ============================================================
+
+#define PART_MAGIC          0x5880
+#define PART_FLAG_LEFT      0x01
+#define TYPE_NORMAL         0
+#define TYPE_LOW            1
+#define BLK_SIZE            512
+#define BLK_BITS            9
+
+#define PART_SIZE_PRELOADER    0x40000
+#define PART_SIZE_MBR          0x80000
+#define PART_SIZE_EBR1         0x80000
+#define PART_SIZE_PMT          0x400000
+#define PART_SIZE_PRO_INFO     0x300000
+#define PART_SIZE_NVRAM        0x500000
+#define PART_SIZE_PROTECT_F    0xA00000
+#define PART_SIZE_PROTECT_S    0xA00000
+#define PART_SIZE_SECCFG       0x200000
+#define PART_SIZE_S1SBL        0x40000
+#define PART_SIZE_TA           0x40000
+#define PART_SIZE_LTALABEL     0x40000
+#define PART_SIZE_UBOOT        0x600000
+#define PART_SIZE_BOOTIMG      0x600000
+#define PART_SIZE_RECOVERY     0x600000
+#define PART_SIZE_SEC_RO       0x100000
+#define PART_SIZE_MISC         0x100000
+#define PART_SIZE_LOGO         0x100000
+#define PART_SIZE_EBR2         0x80000
+#define PART_SIZE_EXPDB        0x100000
+#define PART_SIZE_NRSTDATA     0x100000
+#define PART_SIZE_ANDROID      0x20000000
+#define PART_SIZE_CACHE        0x10000000
+#define PART_SIZE_USRDATA      0x20000000
+#define PART_SIZE_FAT          0x8000000
+
+// ============================================================
+// MAIN PARTITION HEADER
+// ============================================================
 
 #define NAND_WRITE_SIZE	 2048
 
 #define BIMG_HEADER_SZ				(0x800)
 #define MKIMG_HEADER_SZ				(0x200)
 
-#define BLK_BITS         (9)
-#define BLK_SIZE         (1 << BLK_BITS)
 #ifdef MTK_EMMC_SUPPORT
 #define BLK_NUM(size)    ((unsigned long long)(size) / BLK_SIZE)
 #else
 #define BLK_NUM(size)    ((unsigned long)(size) / BLK_SIZE)
 #endif
+
 #define PART_KERNEL     "KERNEL"
 #define PART_ROOTFS     "ROOTFS"
 
