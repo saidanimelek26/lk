@@ -1,4 +1,4 @@
-#include "mt_partition.h"
+#include <platform/mt_partition.h>
 
 typedef struct{
 	u32 image_index;
