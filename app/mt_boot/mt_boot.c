@@ -53,6 +53,68 @@ extern BI_DRAM bi_dram[MAX_NR_BANK];
 extern unsigned int *device_tree, device_tree_size;
 #endif
 
+/ ============================================================
+// MT6589: Partition name definitions
+// ============================================================
+
+#ifndef PART_BOOTIMG
+#define PART_BOOTIMG     "bootimg"
+#endif
+
+#ifndef PART_RECOVERY
+#define PART_RECOVERY    "recovery"
+#endif
+
+#ifndef PART_LOGO
+#define PART_LOGO        "logo"
+#endif
+
+// ============================================================
+// MT6589: boot_img_hdr definition (if not in bootimg.h)
+// ============================================================
+
+#ifndef BOOT_IMG_HDR_DEFINED
+#define BOOT_IMG_HDR_DEFINED
+
+typedef struct boot_img_hdr {
+    unsigned char magic[8];
+    unsigned int kernel_size;
+    unsigned int kernel_addr;
+    unsigned int ramdisk_size;
+    unsigned int ramdisk_addr;
+    unsigned int second_size;
+    unsigned int second_addr;
+    unsigned int tags_addr;
+    unsigned int page_size;
+    unsigned int unused;
+    unsigned int dtb_size;
+    unsigned int dtb_addr;
+    char cmdline[512];
+} boot_img_hdr;
+
+#endif
+
+// ============================================================
+// MT6589: External declarations
+// ============================================================
+
+extern boot_img_hdr *g_boot_hdr;
+extern int g_is_64bit_kernel;
+extern char g_boot_reason[][16];
+extern unsigned int g_kmem_off;
+extern unsigned int g_rmem_off;
+extern unsigned int g_rimg_sz;
+extern int g_nr_bank;
+extern int g_rank_size[4];
+extern unsigned int boot_time;
+extern BOOT_ARGUMENT *g_boot_arg;
+#ifdef MTK_KERNEL_POWER_OFF_CHARGING
+extern bool g_boot_reason_change;
+#endif
+extern int has_set_p2u;
+extern unsigned int g_fb_base;
+extern unsigned int g_fb_size;
+
 // ============================================================
 // MT6589: Global variables from old code
 // ============================================================
