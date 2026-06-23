@@ -13,15 +13,15 @@
 #endif
 
 struct msdc_cust msdc_cap[MSDC_MAX_NUM] = {
-    {
-        MSDC0_CLKSRC_DEFAULT,  /* clk_src */
-        MSDC_SMPL_RISING,      /* cmd_edge */
-        MSDC_SMPL_RISING,      /* data_edge */
-        MSDC_DRVN_GEAR1,       /* clk_drv */
-        MSDC_DRVN_GEAR1,       /* cmd_drv */
-        MSDC_DRVN_GEAR1,       /* dat_drv */
-        8,                     /* data_pins */
-        0,                     /* data_offset */
-        MSDC_HIGHSPEED | MSDC_DDR, /* flags */
+    [0] = {
+        .clk_src     = MSDC0_CLKSRC_DEFAULT,
+        .cmd_edge    = MSDC_SMPL_RISING,
+        .data_edge   = MSDC_SMPL_RISING,
+        .clk_drv     = MSDC_DRVN_GEAR1,
+        .cmd_drv     = MSDC_DRVN_GEAR1,
+        .dat_drv     = MSDC_DRVN_GEAR1,
+        .data_pins   = 8,
+        .data_offset = 0,
+        .flags       = MSDC_HIGHSPEED | MSDC_DDR,
     }
 };
