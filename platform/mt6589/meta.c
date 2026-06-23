@@ -33,7 +33,7 @@
 #include <target/cust_key.h>
 #include <platform/meta.h>
 #include <platform/mt_rtc.h>
-#include <mt_partition.h>
+#include <platform/mt_partition.h>
 
 /**************************************************************************
  *  CONSTANT DEFINITION
