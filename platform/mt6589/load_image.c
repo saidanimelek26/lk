@@ -2,7 +2,6 @@
 #include <stdint.h>
 
 
-#include <mt_partition.h>
 #include <platform/mt_typedefs.h>
 #include <platform/boot_mode.h>
 #include <platform/mt_reg_base.h>
