@@ -14,11 +14,12 @@
 
 #include <platform/mt_reg_base.h>
 #include <platform/boot_mode.h>
-#include <platform/mt_partition.h>
+#include <mt_partition.h>
 #include <platform/mt_disp_drv.h>
 #include <platform/env.h>
 #include <target/cust_usb.h>
 #include <platform/mt_gpt.h>
+#include <platform/bootimg.h>
 
 #ifdef MTK_KERNEL_POWER_OFF_CHARGING
 #include "platform/mtk_wdt.h"
@@ -28,32 +29,7 @@ extern void mt6575_power_off(void);
 extern void mt65xx_backlight_off(void);
 #endif
 
-extern u32 memory_size(void);
-extern unsigned *target_atag_devinfo_data(unsigned *ptr);
-extern unsigned *target_atag_videolfb(unsigned *ptr);
-extern unsigned *target_atag_mdinfo(unsigned *ptr);
-extern void platform_uninit(void);
-extern int mboot_android_load_bootimg_hdr(char *part_name, unsigned long addr);
-extern int mboot_android_load_bootimg(char *part_name, unsigned long addr);
-extern int mboot_android_load_recoveryimg_hdr(char *part_name, unsigned long addr);
-extern int mboot_android_load_recoveryimg(char *part_name, unsigned long addr);
-extern int mboot_android_load_factoryimg_hdr(char *part_name, unsigned long addr);
-extern int mboot_android_load_factoryimg(char *part_name, unsigned long addr);
-extern void custom_port_in_kernel(BOOTMODE boot_mode, char *command);
-extern const char* mt_disp_get_lcm_id(void);
-extern int mt_disp_is_lcm_connected(void);
-extern int fastboot_init(void *base, unsigned size);
-extern int sec_func_init(int dev_type);
-extern int sec_boot_check (int try_lock);
-extern int platform_skip_hibernation(void) __attribute__((weak));
-
-#ifdef DEVICE_TREE_SUPPORT
-#include <libfdt.h>
-extern BI_DRAM bi_dram[MAX_NR_BANK];
-extern unsigned int *device_tree, device_tree_size;
-#endif
-
-/ ============================================================
+// ============================================================
 // MT6589: Partition name definitions
 // ============================================================
 
@@ -69,67 +45,13 @@ extern unsigned int *device_tree, device_tree_size;
 #define PART_LOGO        "logo"
 #endif
 
-// ============================================================
-// MT6589: boot_img_hdr definition (if not in bootimg.h)
-// ============================================================
-
-#ifndef BOOT_IMG_HDR_DEFINED
-#define BOOT_IMG_HDR_DEFINED
-
-typedef struct boot_img_hdr {
-    unsigned char magic[8];
-    unsigned int kernel_size;
-    unsigned int kernel_addr;
-    unsigned int ramdisk_size;
-    unsigned int ramdisk_addr;
-    unsigned int second_size;
-    unsigned int second_addr;
-    unsigned int tags_addr;
-    unsigned int page_size;
-    unsigned int unused;
-    unsigned int dtb_size;
-    unsigned int dtb_addr;
-    char cmdline[512];
-} boot_img_hdr;
-
+#ifndef PART_MISC
+#define PART_MISC        "misc"
 #endif
 
-// ============================================================
-// MT6589: External declarations
-// ============================================================
-
-extern boot_img_hdr *g_boot_hdr;
-extern int g_is_64bit_kernel;
-extern char g_boot_reason[][16];
-extern unsigned int g_kmem_off;
-extern unsigned int g_rmem_off;
-extern unsigned int g_rimg_sz;
-extern int g_nr_bank;
-extern int g_rank_size[4];
-extern unsigned int boot_time;
-extern BOOT_ARGUMENT *g_boot_arg;
-#ifdef MTK_KERNEL_POWER_OFF_CHARGING
-extern bool g_boot_reason_change;
+#ifndef PART_PARA
+#define PART_PARA        "para"
 #endif
-extern int has_set_p2u;
-extern unsigned int g_fb_base;
-extern unsigned int g_fb_size;
-
-// ============================================================
-// MT6589: Global variables from old code
-// ============================================================
-
-int g_is_64bit_kernel = 0;
-boot_img_hdr *g_boot_hdr = NULL;
-char g_boot_reason[][16] = {"power_key","usb","rtc","wdt","wdt_by_pass_pwk",
-                            "tool_by_pass_pwk","2sec_reboot","unknown",
-                            "kernel_panic","reboot","watchdog"};
-
-char g_CMDLINE [200] = COMMANDLINE_TO_KERNEL;
-
-// ============================================================
-// MT6589: Configuration defines
-// ============================================================
 
 #ifndef CFG_FACTORY_NAME
 #define CFG_FACTORY_NAME "factory"
@@ -164,11 +86,90 @@ char g_CMDLINE [200] = COMMANDLINE_TO_KERNEL;
 #endif
 
 // ============================================================
+// MT6589: boot_img_hdr structure (if not in bootimg.h)
+// ============================================================
+
+#ifndef BOOT_IMG_HDR_DEFINED
+#define BOOT_IMG_HDR_DEFINED
+
+typedef struct boot_img_hdr {
+    unsigned char magic[8];
+    unsigned int kernel_size;
+    unsigned int kernel_addr;
+    unsigned int ramdisk_size;
+    unsigned int ramdisk_addr;
+    unsigned int second_size;
+    unsigned int second_addr;
+    unsigned int tags_addr;
+    unsigned int page_size;
+    unsigned int unused;
+    unsigned int dtb_size;
+    unsigned int dtb_addr;
+    char cmdline[512];
+} boot_img_hdr;
+
+#endif
+
+// ============================================================
 // MT6589: Weak functions for memory preserved mode
 // ============================================================
 
 void __attribute__((weak)) platform_mem_preserved_load_img(void) { }
 void __attribute__((weak)) platform_mem_preserved_dump_mem(void) { }
+
+// ============================================================
+// MT6589: Global variables
+// ============================================================
+
+int g_is_64bit_kernel = 0;
+boot_img_hdr *g_boot_hdr = NULL;
+char g_boot_reason[][16] = {"power_key","usb","rtc","wdt","wdt_by_pass_pwk",
+                            "tool_by_pass_pwk","2sec_reboot","unknown",
+                            "kernel_panic","reboot","watchdog"};
+
+char g_CMDLINE [200] = COMMANDLINE_TO_KERNEL;
+
+// ============================================================
+// MT6589: External declarations
+// ============================================================
+
+extern unsigned int g_kmem_off;
+extern unsigned int g_rmem_off;
+extern unsigned int g_rimg_sz;
+extern int g_nr_bank;
+extern int g_rank_size[4];
+extern unsigned int boot_time;
+extern BOOT_ARGUMENT *g_boot_arg;
+#ifdef MTK_KERNEL_POWER_OFF_CHARGING
+extern bool g_boot_reason_change;
+#endif
+extern int has_set_p2u;
+extern unsigned int g_fb_base;
+extern unsigned int g_fb_size;
+extern int platform_skip_hibernation(void) __attribute__((weak));
+extern u32 memory_size(void);
+extern unsigned *target_atag_devinfo_data(unsigned *ptr);
+extern unsigned *target_atag_videolfb(unsigned *ptr);
+extern unsigned *target_atag_mdinfo(unsigned *ptr);
+extern void platform_uninit(void);
+extern int mboot_android_load_bootimg_hdr(char *part_name, unsigned long addr);
+extern int mboot_android_load_bootimg(char *part_name, unsigned long addr);
+extern int mboot_android_load_recoveryimg_hdr(char *part_name, unsigned long addr);
+extern int mboot_android_load_recoveryimg(char *part_name, unsigned long addr);
+extern int mboot_android_load_factoryimg_hdr(char *part_name, unsigned long addr);
+extern int mboot_android_load_factoryimg(char *part_name, unsigned long addr);
+extern void custom_port_in_kernel(BOOTMODE boot_mode, char *command);
+extern const char* mt_disp_get_lcm_id(void);
+extern int mt_disp_is_lcm_connected(void);
+extern int fastboot_init(void *base, unsigned size);
+extern int sec_func_init(int dev_type);
+extern int sec_boot_check (int try_lock);
+
+#ifdef DEVICE_TREE_SUPPORT
+#include <libfdt.h>
+extern BI_DRAM bi_dram[MAX_NR_BANK];
+extern unsigned int *device_tree, device_tree_size;
+#endif
 
 // ============================================================
 
@@ -231,25 +232,8 @@ void msg_img_error(char *img_name)
 	while(1);
 }
 
-//*********
-//* Notice : it's kernel start addr (and not include any debug header)
-extern unsigned int g_kmem_off;
-
-//*********
-//* Notice : it's rootfs start addr (and not include any debug header)
-extern unsigned int g_rmem_off;
-extern unsigned int g_rimg_sz;
-extern int g_nr_bank;
-extern int g_rank_size[4];
-extern unsigned int boot_time;
-extern BOOT_ARGUMENT *g_boot_arg;
-#ifdef MTK_KERNEL_POWER_OFF_CHARGING
-extern bool g_boot_reason_change;
-#endif
-extern int has_set_p2u;
-
 // ============================================================
-// MT6589: check_hibernation with switch and weak function
+// check_hibernation
 // ============================================================
 
 static void check_hibernation(char *cmdline)
@@ -267,6 +251,8 @@ static void check_hibernation(char *cmdline)
     case LOW_POWER_OFF_CHARGING_BOOT:
 #endif
         goto SKIP_HIB_BOOT;
+    default:
+        break;
     }
 
     if (platform_skip_hibernation && platform_skip_hibernation())
@@ -296,7 +282,7 @@ SKIP_HIB_BOOT:
 }
 
 // ============================================================
-// MT6589: DEVICE_TREE_SUPPORT
+// DEVICE_TREE_SUPPORT
 // ============================================================
 
 #ifdef DEVICE_TREE_SUPPORT
@@ -456,7 +442,7 @@ int boot_linux_fdt(void *kernel, unsigned *tags,
 #endif // DEVICE_TREE_SUPPORT
 
 // ============================================================
-// MT6589: boot_linux with g_rank_size
+// boot_linux
 // ============================================================
 
 void boot_linux(void *kernel, unsigned *tags,
@@ -598,7 +584,7 @@ void boot_linux(void *kernel, unsigned *tags,
 }
 
 // ============================================================
-// MT6589: boot_linux_from_storage with g_boot_hdr and g_is_64bit_kernel
+// boot_linux_from_storage
 // ============================================================
 
 int boot_linux_from_storage(void)
@@ -843,7 +829,7 @@ static inline int read_product_info(char *buf)
 #endif
 
 // ============================================================
-// MT6589: mt_boot_init with all features
+// mt_boot_init
 // ============================================================
 
 void mt_boot_init(const struct app_descriptor *app)
@@ -894,9 +880,7 @@ void mt_boot_init(const struct app_descriptor *app)
 #else
     sec_func_init(0);
 #endif
-#endif
-
-	if (g_boot_mode == FASTBOOT)
+#endif	if (g_boot_mode == FASTBOOT)
 		goto fastboot;
 
 #ifdef MTK_SECURITY_SW_SUPPORT
