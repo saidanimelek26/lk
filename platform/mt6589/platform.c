@@ -35,7 +35,6 @@
 
 #include <platform/boot_mode.h>
 #include <platform/mt_reg_base.h>
-#include <mt_partition.h>
 #include <platform/mt_pmic.h>
 #include <platform/mt_i2c.h>
 #include <video.h>
