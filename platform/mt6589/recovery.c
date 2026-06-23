@@ -36,8 +36,7 @@
 #include <platform/recovery.h>
 #include <platform/mt_rtc.h>
 #include <platform/mt_gpt.h>
-#include <mt_partition.h>
-
+#include <platform/mt_partition.h>
 
 extern int mboot_recovery_load_misc(unsigned char *misc_addr, unsigned int size);
 
