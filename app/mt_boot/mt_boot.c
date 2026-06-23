@@ -14,7 +14,7 @@
 
 #include <platform/mt_reg_base.h>
 #include <platform/boot_mode.h>
-#include <platform/mt_partition.h>
+#include <mt_partition.h>
 #include <platform/mt_disp_drv.h>
 #include <platform/env.h>
 #include <target/cust_usb.h>
@@ -30,7 +30,7 @@ extern void mt65xx_backlight_off(void);
 #endif
 
 // ============================================================
-// MT6589: Partition name definitions
+// MT6589: Partition name definitions (if not defined)
 // ============================================================
 
 #ifndef PART_BOOTIMG
@@ -83,31 +83,6 @@ extern void mt65xx_backlight_off(void);
 
 #ifndef mt_disp_get_lcd_time
 #define mt_disp_get_lcd_time() 60
-#endif
-
-// ============================================================
-// MT6589: boot_img_hdr structure (if not in bootimg.h)
-// ============================================================
-
-#ifndef BOOT_IMG_HDR_DEFINED
-#define BOOT_IMG_HDR_DEFINED
-
-typedef struct boot_img_hdr {
-    unsigned char magic[8];
-    unsigned int kernel_size;
-    unsigned int kernel_addr;
-    unsigned int ramdisk_size;
-    unsigned int ramdisk_addr;
-    unsigned int second_size;
-    unsigned int second_addr;
-    unsigned int tags_addr;
-    unsigned int page_size;
-    unsigned int unused;
-    unsigned int dtb_size;
-    unsigned int dtb_addr;
-    char cmdline[512];
-} boot_img_hdr;
-
 #endif
 
 // ============================================================
@@ -880,7 +855,9 @@ void mt_boot_init(const struct app_descriptor *app)
 #else
     sec_func_init(0);
 #endif
-#endif	if (g_boot_mode == FASTBOOT)
+#endif
+
+	if (g_boot_mode == FASTBOOT)
 		goto fastboot;
 
 #ifdef MTK_SECURITY_SW_SUPPORT
