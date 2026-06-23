@@ -472,4 +472,3 @@ unsigned long partition_reserve_size(void)
 
 	return size;		
 }
-
