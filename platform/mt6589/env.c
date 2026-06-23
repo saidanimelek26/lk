@@ -1,10 +1,51 @@
 #include <sys/types.h>
 #include <stdint.h>
+#include <string.h>
+#include <printf.h>
+#include <malloc.h>
 
 #include <platform/env.h>
 #include <platform/mt_partition.h>
 #include <platform/mt_typedefs.h>
 #include <platform/errno.h>
+
+// ============================================================
+// MISSING DEFINITIONS
+// ============================================================
+
+#ifndef PART_MISC
+#define PART_MISC           "misc"
+#endif
+
+#ifndef ENV_SIG
+#define ENV_SIG             "ENV"
+#endif
+
+#ifndef CFG_ENV_SIZE
+#define CFG_ENV_SIZE        4096
+#endif
+
+#ifndef CFG_ENV_OFFSET
+#define CFG_ENV_OFFSET      0
+#endif
+
+#ifndef CFG_ENV_DATA_OFFSET
+#define CFG_ENV_DATA_OFFSET 16
+#endif
+
+#ifndef CFG_ENV_DATA_SIZE
+#define CFG_ENV_DATA_SIZE   (CFG_ENV_SIZE - CFG_ENV_DATA_OFFSET)
+#endif
+
+#ifndef CFG_ENV_SIG_1_OFFSET
+#define CFG_ENV_SIG_1_OFFSET 8
+#endif
+
+#ifndef CFG_ENV_CHECKSUM_OFFSET
+#define CFG_ENV_CHECKSUM_OFFSET 12
+#endif
+
+// ============================================================
 
 #define MODULE_NAME "LK_ENV"
 env_t g_env;
@@ -83,6 +124,7 @@ char *get_env(char *name)
 
 	return (NULL);
 }
+
 static char env_get_char(int index)
 {
 	return *(g_env.env_data+index);
