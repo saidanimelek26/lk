@@ -19,7 +19,7 @@
 #ifdef MTK_GPT_SCHEME_SUPPORT
 #include <platform/partition.h>
 #else
-#include <mt_partition.h>
+#include <platform/mt_partition.h>
 #endif
 #include <platform/mt_disp_drv.h>
 #include <platform/disp_drv.h>
@@ -160,6 +160,7 @@ extern bool g_boot_reason_change;
 extern int has_set_p2u;
 extern unsigned int g_fb_base;
 extern unsigned int g_fb_size;
+extern int g_rank_size[4];
 
 static void check_hibernation(char *cmdline)
 {
@@ -868,15 +869,6 @@ void boot_linux(void *kernel, unsigned *tags,
     *ptr++ = 0;
     *ptr++ = 0;
 
-#if 0
-    dprintf(CRITICAL,"atag start:0x%08X, end:0x%08X\n", tags, ptr);
-    for(unsigned int*scan=tags, i=0; scan!=ptr; scan++, i++)
-    {
-        dprintf(CRITICAL,"0x%08X%c", *scan, (i%4==0)?'\n':'\t');
-    }
-    dprintf(CRITICAL,"\n");
-#endif
-
     dprintf(CRITICAL,"booting linux @ %p, ramdisk @ %p (%d)\n",
             kernel, ramdisk, ramdisk_size);
 
@@ -917,7 +909,7 @@ void boot_linux(void *kernel, unsigned *tags,
 #ifndef MTK_LM_MODE
         dprintf(CRITICAL,"DRAM Rank[%d] Start = 0x%x, Size = 0x%x\n", i, (unsigned int)bi_dram[i].start, (unsigned int)bi_dram[i].size);
 #else
-        dprintf(CRITICAL,"DRAM Rank[%d] Start = 0x%llx, Size = 0x%llx\n", i, (unsigned int)bi_dram[i].start, (unsigned int)bi_dram[i].size);
+        dprintf(CRITICAL,"DRAM Rank[%d] Start = 0x%llx, Size = 0x%llx\n", i, bi_dram[i].start, bi_dram[i].size);
 #endif
     }
     dprintf(CRITICAL,"cmdline: %s\n", cmdline);
