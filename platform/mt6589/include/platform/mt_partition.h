@@ -1,11 +1,8 @@
-
-
 #ifndef __MT_PARTITION_H__
 #define __MT_PARTITION_H__
 
-
 #include <platform/part.h>
-#include "include/platform/partition_define.h"
+#include <platform/partition_define.h>
 #include <platform/mt_typedefs.h>
 
 #define NAND_WRITE_SIZE	 2048
@@ -48,7 +45,6 @@
 #define PART_BLKS_CACHE   BLK_NUM(PART_SIZE_CACHE)
 #define PART_BLKS_USER   BLK_NUM(PART_SIZE_USRDATA)
 #define PART_BLKS_FAT   BLK_NUM(PART_SIZE_FAT)
-
 
 #define PMT_END_NAME "FAT"
 
@@ -100,6 +96,7 @@ struct part_dev {
     int (*write) (part_dev_t *dev, uchar *src, ulong dst, int size);
 #endif
 };
+
 extern struct part_name_map g_part_name_map[];
 extern int mt_part_register_device(part_dev_t *dev);
 extern part_t* mt_part_get_partition(char *name);
@@ -117,5 +114,5 @@ extern u64 emmc_write(u64 offset, void *data, u64 size);
 extern u64 emmc_read(u64 offset, void *data, u64 size);
 extern int emmc_erase(u64 offset, u64 size);
 extern unsigned long partition_reserve_size(void);
-#endif /* __MT_PARTITION_H__ */
 
+#endif /* __MT_PARTITION_H__ */
