@@ -12,7 +12,7 @@
 
 #if defined(MT_GPIO_ENABLED)
 #include <platform/cust_gpio_boot.h>
-#include <cust_power.h>
+#include <platform/cust_power.h>
 #endif
 
 #include <platform/mt_reg_base.h>
