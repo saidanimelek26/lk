@@ -20,6 +20,10 @@ jobs:
         sudo apt-get install -y python2
         sudo ln -sf /usr/bin/python2 /usr/local/bin/python
 
+    - name: Install 32-bit libraries
+      run: |
+        sudo apt-get install -y lib32stdc++6 lib32z1
+
     - name: Cache GCC toolchain
       id: cache-gcc
       uses: actions/cache@v4
@@ -42,6 +46,22 @@ jobs:
     - name: Fix DrvGen permissions
       run: |
         chmod +x scripts/dct/DrvGen
+
+    - name: Debug DWS file
+      run: |
+        echo "=== Checking DWS file ==="
+        DWS_FILE="target/fpga6580/dct/dct/codegen.dws"
+        if [ -f "$DWS_FILE" ]; then
+          echo "✅ DWS file exists at: $DWS_FILE"
+          echo "File size: $(ls -lh $DWS_FILE | awk '{print $5}')"
+          echo "First 10 lines of DWS file:"
+          head -10 "$DWS_FILE"
+        else
+          echo "❌ DWS file NOT found at: $DWS_FILE"
+          echo "Looking for DWS files in target directory:"
+          find target -name "*.dws" 2>/dev/null || echo "No .dws files found"
+        fi
+        echo "=========================="
 
     - name: Build LK
       run: |
