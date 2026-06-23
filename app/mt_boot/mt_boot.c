@@ -14,7 +14,7 @@
 
 #include <platform/mt_reg_base.h>
 #include <platform/boot_mode.h>
-#include <mt_partition.h>
+#include <platform/mt_partition.h>
 #include <platform/mt_disp_drv.h>
 #include <platform/env.h>
 #include <target/cust_usb.h>
