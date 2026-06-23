@@ -40,7 +40,7 @@
 #include <string.h>
 
 /* show logo header file */
-#include <show_logo_common.h>
+#include <platform/show_logo_common.h>
 #include <decompress_common.h>
 #include <show_animation_common.h>
 
