@@ -83,7 +83,7 @@ struct msdc_cust {
     unsigned int   flags;             /* hardware capability flags     */
 };
 
-/* Declaration - defined in cust_msdc.c */
+/* Only DECLARE - DO NOT DEFINE here */
 extern struct msdc_cust msdc_cap[MSDC_MAX_NUM];
 
 #endif /* end of _MSDC_CUST_H_ */
