@@ -1,25 +1,61 @@
-
-
 #ifndef __MT_PARTITION_H__
 #define __MT_PARTITION_H__
 
-
 #include <platform/part.h>
-#include "partition_define.h"
 #include <platform/mt_typedefs.h>
+
+// ============================================================
+// PARTITION DEFINITIONS (merged from partition_define.h)
+// ============================================================
+
+#define PART_MAGIC          0x5880
+#define PART_FLAG_LEFT      0x01
+#define TYPE_NORMAL         0
+#define TYPE_LOW            1
+#define BLK_SIZE            512
+#define BLK_BITS            9
+
+#define PART_SIZE_PRELOADER    0x40000
+#define PART_SIZE_MBR          0x80000
+#define PART_SIZE_EBR1         0x80000
+#define PART_SIZE_PMT          0x400000
+#define PART_SIZE_PRO_INFO     0x300000
+#define PART_SIZE_NVRAM        0x500000
+#define PART_SIZE_PROTECT_F    0xA00000
+#define PART_SIZE_PROTECT_S    0xA00000
+#define PART_SIZE_SECCFG       0x200000
+#define PART_SIZE_S1SBL        0x40000
+#define PART_SIZE_TA           0x40000
+#define PART_SIZE_LTALABEL     0x40000
+#define PART_SIZE_UBOOT        0x600000
+#define PART_SIZE_BOOTIMG      0x600000
+#define PART_SIZE_RECOVERY     0x600000
+#define PART_SIZE_SEC_RO       0x100000
+#define PART_SIZE_MISC         0x100000
+#define PART_SIZE_LOGO         0x100000
+#define PART_SIZE_EBR2         0x80000
+#define PART_SIZE_EXPDB        0x100000
+#define PART_SIZE_NRSTDATA     0x100000
+#define PART_SIZE_ANDROID      0x20000000
+#define PART_SIZE_CACHE        0x10000000
+#define PART_SIZE_USRDATA      0x20000000
+#define PART_SIZE_FAT          0x8000000
+
+// ============================================================
+// MAIN PARTITION HEADER
+// ============================================================
 
 #define NAND_WRITE_SIZE	 2048
 
 #define BIMG_HEADER_SZ				(0x800)
 #define MKIMG_HEADER_SZ				(0x200)
 
-#define BLK_BITS         (9)
-#define BLK_SIZE         (1 << BLK_BITS)
 #ifdef MTK_EMMC_SUPPORT
 #define BLK_NUM(size)    ((unsigned long long)(size) / BLK_SIZE)
 #else
 #define BLK_NUM(size)    ((unsigned long)(size) / BLK_SIZE)
 #endif
+
 #define PART_KERNEL     "KERNEL"
 #define PART_ROOTFS     "ROOTFS"
 
@@ -48,7 +84,6 @@
 #define PART_BLKS_CACHE   BLK_NUM(PART_SIZE_CACHE)
 #define PART_BLKS_USER   BLK_NUM(PART_SIZE_USRDATA)
 #define PART_BLKS_FAT   BLK_NUM(PART_SIZE_FAT)
-
 
 #define PMT_END_NAME "FAT"
 
@@ -100,6 +135,7 @@ struct part_dev {
     int (*write) (part_dev_t *dev, uchar *src, ulong dst, int size);
 #endif
 };
+
 extern struct part_name_map g_part_name_map[];
 extern int mt_part_register_device(part_dev_t *dev);
 extern part_t* mt_part_get_partition(char *name);
@@ -117,5 +153,5 @@ extern u64 emmc_write(u64 offset, void *data, u64 size);
 extern u64 emmc_read(u64 offset, void *data, u64 size);
 extern int emmc_erase(u64 offset, u64 size);
 extern unsigned long partition_reserve_size(void);
-#endif /* __MT_PARTITION_H__ */
 
+#endif /* __MT_PARTITION_H__ */
