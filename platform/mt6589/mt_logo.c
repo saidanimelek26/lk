@@ -22,27 +22,139 @@
  * MA 02111-1307 USA
  */
 
-
 /* HEADER FILES   */
 
 #include <debug.h>
-
 #include <platform/mt_typedefs.h>
 #include <platform/mt_disp_drv.h>
 #include <platform/disp_drv.h>
 #include <platform/lcd_drv.h>
 #include <platform/mt_logo.h>
 #include <platform/disp_drv_platform.h>
-
 #include <target/board.h>
 #include "lcm_drv.h"
-
 #include <string.h>
-
-/* show logo header file */
 #include <platform/show_logo_common.h>
 #include <platform/decompress_common.h>
 #include <platform/show_animation_common.h>
+
+// ============================================================
+// ============================================================
+// ALL MISSING DEFINITIONS ADDED HERE
+// ============================================================
+// ============================================================
+
+/*===========================================================================
+ * LCM_SCREEN_T - Screen structure
+ *===========================================================================*/
+#ifndef LCM_SCREEN_T_DEFINED
+#define LCM_SCREEN_T_DEFINED
+
+typedef struct {
+    unsigned int width;
+    unsigned int height;
+    unsigned int fb_size;
+    unsigned int fill_dst_bits;
+    unsigned int needAllign;
+    unsigned int allignWidth;
+    unsigned int need180Adjust;
+    unsigned int rotation;
+} LCM_SCREEN_T;
+
+#endif
+
+/*===========================================================================
+ * RECT_REGION_T - Rectangle region structure
+ *===========================================================================*/
+#ifndef RECT_REGION_T_DEFINED
+#define RECT_REGION_T_DEFINED
+
+typedef struct {
+    unsigned int left;
+    unsigned int top;
+    unsigned int right;
+    unsigned int bottom;
+} RECT_REGION_T;
+
+#endif
+
+/*===========================================================================
+ * ALIGN_TO macro
+ *===========================================================================*/
+#ifndef ALIGN_TO
+#define ALIGN_TO(x, align)  (((x) + (align) - 1) & ~((align) - 1))
+#endif
+
+/*===========================================================================
+ * LOGO_CUST_IF - Custom interface structure
+ *===========================================================================*/
+#ifndef LOGO_CUST_IF_DEFINED
+#define LOGO_CUST_IF_DEFINED
+
+typedef struct {
+    void (*show_boot_logo)(void);
+    void (*enter_charging_state)(void);
+    void (*show_battery_capacity)(unsigned int capacity);
+} LOGO_CUST_IF;
+
+#endif
+
+/*===========================================================================
+ * External function declarations for missing functions
+ *===========================================================================*/
+#ifndef EXTERN_FUNCTIONS_DECLARED
+#define EXTERN_FUNCTIONS_DECLARED
+
+extern void *LOGO_GetCustomIF(void);
+extern void fill_animation_logo(unsigned int index, void *fill_addr, void *dec_logo_addr, void *logo_addr, LCM_SCREEN_T phical_screen);
+extern void fill_animation_battery_by_ver(unsigned int capacity, void *fill_addr, void *dec_logo_addr, void *logo_addr, LCM_SCREEN_T phical_screen, int version);
+extern void fill_rect_with_color(void *fill_addr, RECT_REGION_T rect, unsigned int color, LCM_SCREEN_T phical_screen);
+extern void *mt_get_fb_addr(void);
+extern void *mt_get_tempfb_addr(void);
+extern void *mt_get_logo_db_addr(void);
+extern unsigned int mt_get_fb_size(void);
+
+#endif
+
+/*===========================================================================
+ * Constants
+ *===========================================================================*/
+#ifndef BOOT_LOGO_INDEX
+#define BOOT_LOGO_INDEX         0
+#endif
+
+#ifndef LOW_BATTERY_INDEX
+#define LOW_BATTERY_INDEX       1
+#endif
+
+#ifndef CHARGER_OV_INDEX
+#define CHARGER_OV_INDEX        2
+#endif
+
+#ifndef CAPACITY_LEFT
+#define CAPACITY_LEFT           0
+#endif
+
+#ifndef CAPACITY_TOP
+#define CAPACITY_TOP            0
+#endif
+
+#ifndef CAPACITY_RIGHT
+#define CAPACITY_RIGHT          100
+#endif
+
+#ifndef CAPACITY_BOTTOM
+#define CAPACITY_BOTTOM         100
+#endif
+
+#ifndef MTK_LCM_PHYSICAL_ROTATION
+#define MTK_LCM_PHYSICAL_ROTATION "0"
+#endif
+
+// ============================================================
+// END OF MISSING DEFINITIONS
+// ============================================================
+// ============================================================
 
 LCM_SCREEN_T phical_screen;
 void  *logo_addr = NULL;
@@ -57,7 +169,6 @@ static LOGO_CUST_IF *logo_cust_if = NULL;
 /***                                                                   ***/
 
 int show_animationm_ver = 0;
-
 
 /*
  * Get the defined charging animation version 
@@ -137,7 +248,6 @@ void init_fb_screen()
     
 }
 
-
 /*
  * Custom interface 
  *
@@ -149,7 +259,6 @@ void mt_logo_get_custom_if(void)
         logo_cust_if = (LOGO_CUST_IF *)LOGO_GetCustomIF();
     }
 }
-
 
 /*
  * Show first boot logo when phone boot up
@@ -195,7 +304,6 @@ void mt_disp_enter_charging_state(void)
     return;
 }
 
-
 /*
  * Show full battery when poweroff charging
  *
@@ -205,7 +313,6 @@ void mt_disp_show_battery_full(void)
     dprintf(INFO, "[lk logo: %s %d]\n",__FUNCTION__,__LINE__);
     mt_disp_show_battery_capacity(100);
 }
-
 
 /*
  * Show animation when poweroff charging
@@ -278,7 +385,6 @@ void mt_disp_show_low_battery(void)
     return;
 }
 
-
 /*
  * Fill rectangle region for with black  or other color  
  *
@@ -293,4 +399,3 @@ void mt_disp_fill_rect(UINT32 left, UINT32 top,
     
     fill_rect_with_color(mt_get_fb_addr(), rect, color, phical_screen);     
 }
-
