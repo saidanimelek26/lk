@@ -82,13 +82,9 @@ DRVGEN_PREBUILT_CHECK := $(filter-out $(wildcard $(addprefix $(DRVGEN_PREBUILT_P
 .PHONY: drvgen
 drvgen: $(DRVGEN_FILE_LIST)
 
-$(DRVGEN_FILE_LIST): $(DRVGEN_OUT)/% : $(DRVGEN_PREBUILT_PATH)/%
+$(DRVGEN_FILE_LIST): $(DRVGEN_OUT)/%:
 	@mkdir -p $(dir $@)
-	@if [ -f "$<" ]; then \
-		cp -f $< $@; \
-	else \
-		echo "/* Auto-generated stub for $(TARGET) */" > $@; \
-		echo "#ifndef __$$(echo $(notdir $@) | tr 'a-z.' 'A-Z_')__" >> $@; \
-		echo "#define __$$(echo $(notdir $@) | tr 'a-z.' 'A-Z_')__" >> $@; \
-		echo "#endif" >> $@; \
-	fi
+	@echo "/* Auto-generated stub for $(TARGET) */" > $@
+	@echo "#ifndef __$$(echo $(notdir $@) | tr 'a-z.' 'A-Z_')__" >> $@
+	@echo "#define __$$(echo $(notdir $@) | tr 'a-z.' 'A-Z_')__" >> $@
+	@echo "#endif" >> $@
