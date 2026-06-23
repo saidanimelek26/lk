@@ -1,4 +1,4 @@
-name: Build LK Bootloader for fpga6580
+name: Build LK Bootloader for fpga6589
 
 on:
   push:
@@ -50,7 +50,7 @@ jobs:
     - name: Debug DWS file
       run: |
         echo "=== Checking DWS file ==="
-        DWS_FILE="target/fpga6580/dct/dct/codegen.dws"
+        DWS_FILE="target/fpga6589/dct/dct/codegen.dws"
         if [ -f "$DWS_FILE" ]; then
           echo "✅ DWS file exists at: $DWS_FILE"
           echo "File size: $(ls -lh $DWS_FILE | awk '{print $5}')"
@@ -67,17 +67,17 @@ jobs:
       run: |
         export python=python2
         export TOOLCHAIN_PREFIX=$HOME/gcc-toolchain/bin/arm-linux-androideabi-
-        make fpga6580
+        make fpga6589
 
     - name: List build files
       run: |
         echo "=== Build directory contents ==="
-        ls -lh build-fpga6580/ || true
+        ls -lh build-fpga6589/ || true
         echo "================================"
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: realme-fpga6580-complete
+        name: realme-fpga6589-complete
         path: |
-          build-fpga6580/lk.img
+          build-fpga6589/lk.img
