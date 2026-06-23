@@ -43,6 +43,7 @@
 #include <string.h>
 #include <printf.h>
 #include <malloc.h>
+#include <platform/mmc_core.h>
 #include <debug.h>
 
 #include "msdc.h"
