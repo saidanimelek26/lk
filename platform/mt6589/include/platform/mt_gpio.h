@@ -1,6 +1,5 @@
 // FIX-ME: marked for early porting
 //#if (defined(CONFIG_MT6589_FPGA))
-#include <cust_gpio_usage.h>
 #define MT_GPIO_ENABLED 1
 //#endif
 
