@@ -36,52 +36,35 @@
 #include "cust_msdc.h"
 #include "msdc.h"
 
+#ifndef MSDC_MAX_NUM
+#define MSDC_MAX_NUM 1
+#endif
 
 struct msdc_cust msdc_cap[MSDC_MAX_NUM] =
 {
     {
-        MSDC0_CLKSRC_DEFAULT, /* host clock source           */
-        MSDC_SMPL_RISING,   /* command latch edge            */
-        MSDC_SMPL_RISING,   /* data latch edge               */
-        MSDC_DRVN_GEAR1,    /* clock pad driving             */
-        MSDC_DRVN_GEAR1,    /* command pad driving           */
-        MSDC_DRVN_GEAR1,    /* data pad driving              */
-        MSDC_DRVN_GEAR1,    /* rst pad driving               */
-        MSDC_DRVN_GEAR1,    /* ds pad driving                */
-        MSDC_DRVN_DONT_CARE,/* clock pad driving on 1.8V     */
-        MSDC_DRVN_DONT_CARE,/* command pad driving on 1.8V   */
-        MSDC_DRVN_DONT_CARE,/* data pad driving on 1.8V      */
-        8,                  /* data pins                     */
-        0,                  /* data address offset           */
-#if defined(MMC_MSDC_DRV_CTP)
-        MSDC_HIGHSPEED | MSDC_HS200 | MSDC_RST_PIN_EN | MSDC_DDR
-#else
-        MSDC_HIGHSPEED | MSDC_DDR
-#endif
+        .clk_src      = MSDC0_CLKSRC_DEFAULT,  /* host clock source */
+        .cmd_edge     = MSDC_SMPL_RISING,      /* command latch edge */
+        .data_edge    = MSDC_SMPL_RISING,      /* data latch edge */
+        .clk_drv      = MSDC_DRVN_GEAR1,       /* clock pad driving */
+        .cmd_drv      = MSDC_DRVN_GEAR1,       /* command pad driving */
+        .dat_drv      = MSDC_DRVN_GEAR1,       /* data pad driving */
+        .data_pins    = 8,                     /* data pins */
+        .data_offset  = 0,                     /* data address offset */
+        .flags        = MSDC_HIGHSPEED | MSDC_DDR, /* flags */
     }
-
 #if (defined(MMC_MSDC_DRV_CTP) && !defined(FPGA_PLATFORM))
     ,
     {
-        MSDC1_CLKSRC_DEFAULT, /* host clock source           */
-        MSDC_SMPL_RISING,   /* command latch edge            */
-        MSDC_SMPL_RISING,   /* data latch edge               */
-        MSDC_DRVN_GEAR1,    /* clock pad driving             */
-        MSDC_DRVN_GEAR1,    /* command pad driving           */
-        MSDC_DRVN_GEAR1,    /* data pad driving              */
-        MSDC_DRVN_DONT_CARE,/* no need for not-emmc card     */
-        MSDC_DRVN_DONT_CARE,/* no need for not-emmc card     */
-        MSDC_DRVN_GEAR1,    /* clock pad driving on 1.8V     */
-        MSDC_DRVN_GEAR1,    /* command pad driving on 1.8V   */
-        MSDC_DRVN_GEAR1,    /* data pad driving on 1.8V      */
-        4,                  /* data pins                     */
-        0,                  /* data address offset           */
-
-        /* hardware capability flags     */
-        MSDC_HIGHSPEED | MSDC_UHS1 | MSDC_DDR //|MSDC_UHS1|MSDC_SDIO_IRQ|MSDC_DDR
+        .clk_src      = MSDC1_CLKSRC_DEFAULT,  /* host clock source */
+        .cmd_edge     = MSDC_SMPL_RISING,      /* command latch edge */
+        .data_edge    = MSDC_SMPL_RISING,      /* data latch edge */
+        .clk_drv      = MSDC_DRVN_GEAR1,       /* clock pad driving */
+        .cmd_drv      = MSDC_DRVN_GEAR1,       /* command pad driving */
+        .dat_drv      = MSDC_DRVN_GEAR1,       /* data pad driving */
+        .data_pins    = 4,                     /* data pins */
+        .data_offset  = 0,                     /* data address offset */
+        .flags        = MSDC_HIGHSPEED | MSDC_UHS1 | MSDC_DDR, /* flags */
     }
 #endif
 };
-
-
-
