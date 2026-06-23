@@ -39,14 +39,9 @@
 #include <platform/show_animation_common.h>
 
 // ============================================================
-// ============================================================
-// ALL MISSING DEFINITIONS ADDED HERE
-// ============================================================
+// MISSING DEFINITIONS (ONLY THOSE NOT IN mt_logo.h)
 // ============================================================
 
-/*===========================================================================
- * LCM_SCREEN_T - Screen structure
- *===========================================================================*/
 #ifndef LCM_SCREEN_T_DEFINED
 #define LCM_SCREEN_T_DEFINED
 
@@ -63,9 +58,6 @@ typedef struct {
 
 #endif
 
-/*===========================================================================
- * RECT_REGION_T - Rectangle region structure
- *===========================================================================*/
 #ifndef RECT_REGION_T_DEFINED
 #define RECT_REGION_T_DEFINED
 
@@ -78,34 +70,14 @@ typedef struct {
 
 #endif
 
-/*===========================================================================
- * ALIGN_TO macro
- *===========================================================================*/
 #ifndef ALIGN_TO
 #define ALIGN_TO(x, align)  (((x) + (align) - 1) & ~((align) - 1))
 #endif
 
-/*===========================================================================
- * LOGO_CUST_IF - Custom interface structure
- *===========================================================================*/
-#ifndef LOGO_CUST_IF_DEFINED
-#define LOGO_CUST_IF_DEFINED
+// ============================================================
+// External function declarations (only those not already declared)
+// ============================================================
 
-typedef struct {
-    void (*show_boot_logo)(void);
-    void (*enter_charging_state)(void);
-    void (*show_battery_capacity)(unsigned int capacity);
-} LOGO_CUST_IF;
-
-#endif
-
-/*===========================================================================
- * External function declarations for missing functions
- *===========================================================================*/
-#ifndef EXTERN_FUNCTIONS_DECLARED
-#define EXTERN_FUNCTIONS_DECLARED
-
-extern void *LOGO_GetCustomIF(void);
 extern void fill_animation_logo(unsigned int index, void *fill_addr, void *dec_logo_addr, void *logo_addr, LCM_SCREEN_T phical_screen);
 extern void fill_animation_battery_by_ver(unsigned int capacity, void *fill_addr, void *dec_logo_addr, void *logo_addr, LCM_SCREEN_T phical_screen, int version);
 extern void fill_rect_with_color(void *fill_addr, RECT_REGION_T rect, unsigned int color, LCM_SCREEN_T phical_screen);
@@ -114,11 +86,10 @@ extern void *mt_get_tempfb_addr(void);
 extern void *mt_get_logo_db_addr(void);
 extern unsigned int mt_get_fb_size(void);
 
-#endif
+// ============================================================
+// Constants
+// ============================================================
 
-/*===========================================================================
- * Constants
- *===========================================================================*/
 #ifndef BOOT_LOGO_INDEX
 #define BOOT_LOGO_INDEX         0
 #endif
@@ -153,7 +124,6 @@ extern unsigned int mt_get_fb_size(void);
 
 // ============================================================
 // END OF MISSING DEFINITIONS
-// ============================================================
 // ============================================================
 
 LCM_SCREEN_T phical_screen;
