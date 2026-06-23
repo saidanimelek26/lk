@@ -19,7 +19,7 @@
 #ifdef MTK_GPT_SCHEME_SUPPORT
 #include <platform/partition.h>
 #else
-#include <mt_partition.h>
+#include <platform/mt_partition.h>
 #endif
 #if defined(MTK_SECURITY_SW_SUPPORT) && defined(MTK_SEC_FASTBOOT_UNLOCK_SUPPORT)
 #include "sec_unlock.h"
