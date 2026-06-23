@@ -1,7 +1,7 @@
 #include <platform/mt_partition.h>
 #include <stdint.h>
 #include <platform/errno.h>
-#include "pmt.h"
+#include <platform/pmt.h>
 #include <platform/mtk_nand.h>
 #include <target.h>
 #define PMT 1
