@@ -15,6 +15,12 @@
 #define MSDC_SMPL_RISING        (0)
 #define MSDC_SMPL_FALLING       (1)
 
+/* Add missing definitions */
+#define MSDC0_CLKSRC_DEFAULT    0
+#define MSDC_DRVN_GEAR1         1
+#define MSDC_DRVN_DONT_CARE     0
+#define MSDC_MAX_NUM            1
+
 typedef enum {
     MSDC_CLKSRC_200MHZ = 0
 } clk_source_t;
@@ -31,6 +37,17 @@ struct msdc_cust {
     unsigned int   flags;             /* hardware capability flags     */
 };
 
-extern struct msdc_cust msdc_cap;
+/* Define msdc_cap directly in the header */
+struct msdc_cust msdc_cap = {
+    .clk_src      = MSDC0_CLKSRC_DEFAULT,
+    .cmd_edge     = MSDC_SMPL_RISING,
+    .data_edge    = MSDC_SMPL_RISING,
+    .clk_drv      = MSDC_DRVN_GEAR1,
+    .cmd_drv      = MSDC_DRVN_GEAR1,
+    .dat_drv      = MSDC_DRVN_GEAR1,
+    .data_pins    = 8,
+    .data_offset  = 0,
+    .flags        = MSDC_CD_PIN_EN | MSDC_REMOVABLE,
+};
 
 #endif /* end of _MSDC_CUST_H_ */
