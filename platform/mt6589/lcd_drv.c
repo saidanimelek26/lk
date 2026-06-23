@@ -760,6 +760,10 @@ LCD_STATUS LCD_ConfigParallelIF(LCD_IF_ID id,
     return LCD_STATUS_OK;
 }
 
+// ============================================================
+// FIX: Changed BYTE_ORDER to lcd_byte_order
+// ============================================================
+
 LCD_STATUS LCD_ConfigIfFormat(LCD_IF_FMT_COLOR_ORDER order,
                               LCD_IF_FMT_TRANS_SEQ transSeq,
                               LCD_IF_FMT_PADDING padding,
@@ -768,9 +772,8 @@ LCD_STATUS LCD_ConfigIfFormat(LCD_IF_FMT_COLOR_ORDER order,
 {
     LCD_REG_WROI_CON ctrl = LCD_REG->WROI_CONTROL;
 
-
     ctrl.RGB_ORDER  = order;
-    ctrl.BYTE_ORDER = transSeq;
+    ctrl.lcd_byte_order = transSeq;   // FIXED: was ctrl.BYTE_ORDER
     ctrl.PADDING    = padding;
     ctrl.DATA_FMT   = (UINT32)format;
     ctrl.IF_FMT   = (UINT32)busWidth;
@@ -781,9 +784,10 @@ LCD_STATUS LCD_ConfigIfFormat(LCD_IF_FMT_COLOR_ORDER order,
 	}
     LCD_OUTREG32(&LCD_REG->WROI_CONTROL, AS_UINT32(&ctrl));
 
-
     return LCD_STATUS_OK;
 }
+
+// ============================================================
 
 LCD_STATUS LCD_ConfigSerialIF(LCD_IF_ID id,
                               LCD_IF_SERIAL_BITS bits,
@@ -2219,4 +2223,3 @@ BOOL LCD_esd_check(void)
 	return lcd_esd_check;
 #endif	
 }
-
