@@ -4,8 +4,86 @@
 #include <platform/pmt.h>
 #include <platform/mtk_nand.h>
 #include <target.h>
-#define PMT 1
 
+// ============================================================
+// ALL MISSING DEFINITIONS
+// ============================================================
+
+#ifndef MAX_PARTITION_NAME_LEN
+#define MAX_PARTITION_NAME_LEN  32
+#endif
+
+#ifndef PT_SIG_SIZE
+#define PT_SIG_SIZE             4
+#endif
+
+#ifndef PART_FLAG_END
+#define PART_FLAG_END           0xFFFFFFFF
+#endif
+
+#ifndef PART_PMT
+#define PART_PMT                "PMT"
+#endif
+
+#ifndef DM_ERR_OK
+#define DM_ERR_OK               0
+#endif
+
+#ifndef ERR_NO_EXIST
+#define ERR_NO_EXIST            -1
+#endif
+
+#ifndef PART_MAX_COUNT
+#define PART_MAX_COUNT          32
+#endif
+
+#ifndef PMT_END_NAME
+#define PMT_END_NAME            "FAT"
+#endif
+
+#ifndef FALSE
+#define FALSE                   0
+#endif
+
+#ifndef TRUE
+#define TRUE                    1
+#endif
+
+typedef struct {
+    char name[MAX_PARTITION_NAME_LEN];
+    u64 offset;
+    u64 size;
+    u32 mask_flags;
+} pt_resident;
+
+typedef struct {
+    char name[MAX_PARTITION_NAME_LEN];
+    u32 offset;
+    u32 size;
+    u32 mask_flags;
+} pt_resident32;
+
+typedef struct {
+    u32 sequencenumber;
+    u32 pt_has_space;
+} pt_info;
+
+typedef struct {
+    int blocksize;
+    int pagesize;
+} flashdev_info;
+
+// External declarations
+extern int is_valid_pt(void *buf);
+extern int is_valid_mpt(void *buf);
+extern unsigned long partition_reserve_size(void);
+extern u64 target_get_max_flash_size(void);
+extern int total_size;
+extern struct NAND_CMD g_kCMD;
+
+// ============================================================
+
+#define PMT 1
 
 //common
 //BLK_SIZE is 512, block_size is from flash is 128K
