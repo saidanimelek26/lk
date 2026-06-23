@@ -2,7 +2,7 @@
 #include <stdint.h>
 
 #include <platform/env.h>
-#include <mt_partition.h>
+#include <platform/mt_partition.h>
 #include <platform/mt_typedefs.h>
 #include <platform/errno.h>
 
