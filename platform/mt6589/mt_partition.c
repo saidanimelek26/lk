@@ -1,6 +1,5 @@
 #include <stdint.h>
 #include <platform/errno.h>
-#include "pmt.h"
 #include <target.h>
 
 #define DBGMSG(...)
