@@ -205,7 +205,7 @@ static inline int _mmc_uffs(unsigned int x)
  * msdc_hard_reset — may not exist on mt6589; provide a weak stub.
  * If the platform does supply it, the linker will use that version.
  */
-static void __attribute__((weak)) msdc_hard_reset(void) { }
+void __attribute__((weak)) msdc_hard_reset(void) { }
 
 /* ======================================================================
  * DEFINITIONS MISSING IN NEW LK (from old file)
