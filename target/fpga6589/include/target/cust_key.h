@@ -4,21 +4,15 @@
 #include<cust_kpd.h>
 
 #define MT65XX_META_KEY		42	/* KEY_2 */
-/* MTK_PMIC_RST_KEY is defined in cust_kpd.h */
-#define MT_CAMERA_KEY 		9
+#define MT65XX_PMIC_RST_KEY	1000	/* Invalid Key */
+#define MT_CAMERA_KEY 		10
 
-#ifdef MT65XX_RECOVERY_KEY
-#define MT65XX_BOOT_MENU_KEY       MT65XX_RECOVERY_KEY     /* KEY_VOLUMEUP */
-#else
-#define MT65XX_BOOT_MENU_KEY       17     /* KEY_VOLUMEUP */
-#endif
+#define MT65XX_BOOT_MENU_KEY       11   /* KEY_VOLUMEUP */
+#define MT65XX_MENU_SELECT_KEY     MT65XX_BOOT_MENU_KEY   
+#define MT65XX_MENU_OK_KEY         12    /* KEY_VOLUMEDOWN */
 
-#define MT65XX_MENU_SELECT_KEY     MT65XX_BOOT_MENU_KEY
-
-#ifdef MT65XX_FACTORY_KEY
-#define MT65XX_MENU_OK_KEY         MT65XX_FACTORY_KEY     /* KEY_VOLUMEDOWN */
-#else
-#define MT65XX_MENU_OK_KEY         0     /* KEY_VOLUMEDOWN */
-#endif
+/* ADD THESE TWO LINES - THIS FIXES THE BUILD ERROR */
+#define MT65XX_FACTORY_KEY         MT_CAMERA_KEY      /* Camera key enters Factory Mode */
+#define MT65XX_RECOVERY_KEY        MT65XX_MENU_OK_KEY /* Volume Down enters Recovery Mode */
 
 #endif /* __CUST_KEY_H__ */
