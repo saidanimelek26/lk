@@ -11,7 +11,7 @@
 #include <platform/mt_gpio.h>
 
 #if defined(MT_GPIO_ENABLED)
-#include <cust_gpio_boot.h>
+#include <platform/cust_gpio_boot.h>
 #include <cust_power.h>
 #endif
 
