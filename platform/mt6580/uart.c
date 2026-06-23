@@ -71,17 +71,10 @@
 #define UART_VFIFO_EN(uart)               (UART_BASE(uart)+0x4c)
 #define UART_RXTRI_AD(uart)               (UART_BASE(uart)+0x50)
 
-//FIXME Disable for FPGA LK Porting
-#ifndef MACH_FPGA
-#define __ENABLE_UART_LOG_SWITCH_FEATURE__
-#endif
-
 // output uart port
 volatile unsigned int g_uart;
 // output uart baudrate
 unsigned int g_brg;
-
-//extern unsigned int mtk_get_bus_freq(void);
 
 #if defined(MACH_FPGA)
 #define UART_SRC_CLK 12000000
@@ -89,118 +82,27 @@ unsigned int g_brg;
 #define UART_SRC_CLK 26000000
 #endif
 
-#ifdef __ENABLE_UART_LOG_SWITCH_FEATURE__
-
-extern BOOT_ARGUMENT *g_boot_arg;
 int get_uart_port_id(void)
 {
-	//unsigned int mode = 0;
-	unsigned int log_port;
-	unsigned int log_enable;
-	//unsigned int  log_baudrate;
-
-	//mode = g_boot_arg->boot_mode &= 0x000000FF;
-	log_port = g_boot_arg->log_port;
-	log_enable = g_boot_arg->log_enable;
-	//log_baudrate = g_boot_arg->log_baudrate;
-	if(log_enable != 0) {
-		switch(log_port)
-		{
-		case UART1:
-			return 1;
-		case UART2:
-			return 2;
-		default:
-			return 2;
-		}
-	}
-	return 2;
-}
-
-int get_meta_port_id(void)
-{
-	unsigned int meta_port;
-
-	meta_port = g_boot_arg->meta_uart_port;
-
-	switch(meta_port)
-	{
-		case UART1:
-			return 1;
-		case UART2:
-			return 2;
-		default:
-			return 1;
-	}
-
 	return 1;
 }
 
-static void change_uart_port(char * cmd_line, char new_val)
-{
-	int i;
-	int len;
-	char *ptr;
-	if(NULL == cmd_line)
-		return;
-
-	len = strlen(cmd_line);
-	ptr = cmd_line;
-
-	i = strlen("ttyMT");
-	if(len < i)
-		return;
-	len = len-i;
-
-	for(i=0; i<=len; i++)
-	{
-		if(strncmp(ptr, "ttyMT", 5)==0)
-		{
-			ptr[5] = new_val; // Find and modify
-			break;
-		}
-		ptr++;
-	}
-}
-void custom_port_in_kernel(BOOTMODE boot_mode, char *command)
-{
-	if(get_uart_port_id() == 1){
-		change_uart_port(command, '0');
-	}else if(get_uart_port_id() == 2){
-		change_uart_port(command, '1');
-	}else if(get_uart_port_id() == 3){
-		change_uart_port(command, '2');
-	}else{
-		change_uart_port(command, '3');
-	}
-}
-
-#else
-void custom_port_in_kernel(BOOTMODE boot_mode, char *command)
-{
-	// Dummy function case
-}
-
-int get_uart_port_id(void)
-{
-	// Dummy function case
-}
 int get_meta_port_id(void)
 {
-
-	// Dummy function case
+	return 1;
 }
-#endif
+
+void custom_port_in_kernel(BOOTMODE boot_mode, char *command)
+{
+}
 
 void mtk_uart_power_on(MTK_UART uart_base)
 {
-	/* UART Powr PDN and Reset*/
-    //#define AP_PERI_GLOBALCON_RST0 (PERI_CON_BASE+0x0)
     #define AP_PERI_GLOBALCON_PDN0 (TOP_CLOCK_CTRL_BASE+0x084)
     if (uart_base == UART1)
-        UART_SET_BITS(1 << 10, AP_PERI_GLOBALCON_PDN0); /* Power on UART1 */
+        UART_SET_BITS(1 << 10, AP_PERI_GLOBALCON_PDN0);
     else if (uart_base == UART2)
-        UART_SET_BITS(1 << 11, AP_PERI_GLOBALCON_PDN0); /* Power on UART2 */
+        UART_SET_BITS(1 << 11, AP_PERI_GLOBALCON_PDN0);
     return;
 }
 
@@ -214,9 +116,7 @@ void uart_setbrg()
 	unsigned int tmp_div;
 
 	speed = g_brg;
-        ////FIXME Disable for MT6582 LK Porting
         uartclk = UART_SRC_CLK;
-	//uartclk = (unsigned int)(mtk_get_bus_freq()*1000/4);
 	if (speed <= 115200 ) {
 		highspeed = 0;
 		quot = 16;
@@ -225,8 +125,7 @@ void uart_setbrg()
 		quot = 1;
 	}
 
-	if (highspeed < 3) { /*0~2*/
-		/* Set divisor DLL and DLH	*/
+	if (highspeed < 3) {
 		divisor   =  uartclk / (quot * speed);
 		remainder =  uartclk % (quot * speed);
 
@@ -234,80 +133,51 @@ void uart_setbrg()
 			divisor += 1;
 
 		mt65xx_reg_sync_writew(highspeed, UART_HIGHSPEED(g_uart));
-		byte = DRV_Reg32(UART_LCR(g_uart));	  /* DLAB start */
+		byte = DRV_Reg32(UART_LCR(g_uart));
 		mt65xx_reg_sync_writel((byte | UART_LCR_DLAB), UART_LCR(g_uart));
 		mt65xx_reg_sync_writel((divisor & 0x00ff), UART_DLL(g_uart));
 		mt65xx_reg_sync_writel(((divisor >> 8)&0x00ff), UART_DLH(g_uart));
-		mt65xx_reg_sync_writel(byte, UART_LCR(g_uart));	  /* DLAB end */
+		mt65xx_reg_sync_writel(byte, UART_LCR(g_uart));
 	}
 	else {
 		data=(unsigned short)(uartclk/speed);
-		high_speed_div = (data>>8) + 1; // divided by 256
+		high_speed_div = (data>>8) + 1;
 
 		tmp_div=uartclk/(speed*high_speed_div);
 		divisor =  (unsigned short)tmp_div;
 
 		remainder = (uartclk)%(high_speed_div*speed);
-		/*get (sample_count+1)*/
 		if (remainder >= ((speed)*(high_speed_div))>>1)
 			divisor =  (unsigned short)(tmp_div+1);
 		else
 			divisor =  (unsigned short)tmp_div;
 
 		sample_count=divisor-1;
-
-		/*get the sample point*/
 		sample_point=(sample_count-1)>>1;
 
-		/*configure register*/
 		mt65xx_reg_sync_writel(highspeed, UART_HIGHSPEED(g_uart));
 
-		byte = DRV_Reg32(UART_LCR(g_uart));	   /* DLAB start */
+		byte = DRV_Reg32(UART_LCR(g_uart));
 		mt65xx_reg_sync_writel((byte | UART_LCR_DLAB), UART_LCR(g_uart));
 		mt65xx_reg_sync_writel((high_speed_div & 0x00ff), UART_DLL(g_uart));
 		mt65xx_reg_sync_writel(((high_speed_div >> 8)&0x00ff), UART_DLH(g_uart));
 		mt65xx_reg_sync_writel(sample_count, UART_SAMPLE_COUNT(g_uart));
 		mt65xx_reg_sync_writel(sample_point, UART_SAMPLE_POINT(g_uart));
-		mt65xx_reg_sync_writel(byte, UART_LCR(g_uart));	  /* DLAB end */
+		mt65xx_reg_sync_writel(byte, UART_LCR(g_uart));
 	}
 }
 
 void mtk_set_current_uart(MTK_UART uart_base)
 {
-    #if 0
-	switch(uart_base)
-	{
-    case UART1 :
-			g_uart = uart_base;
-			break;
-		case UART4 :
-			g_uart = uart_base;
-			break;
-		default:
-			ASSERT(0);
-			break;
-	}
-    #else
     g_uart = uart_base;
-    #endif
 }
 
 void uart_init_early(void)
 {
-	#ifdef __ENABLE_UART_LOG_SWITCH_FEATURE__
-	if(get_uart_port_id() == 1){
-		mtk_set_current_uart(UART1);
-		mtk_uart_power_on(UART1);
-	}else if(get_uart_port_id() == 2){
-		mtk_set_current_uart(UART2);
-		mtk_uart_power_on(UART2);
-	}
-	#else
 	mtk_set_current_uart(UART1);
 	mtk_uart_power_on(UART1);
-	#endif
 
-	DRV_SetReg32(UART_FCR(g_uart), UART_FCR_FIFO_INIT); /* clear fifo */
+	DRV_SetReg32(UART_FCR(g_uart), UART_FCR_FIFO_INIT);
 	mt65xx_reg_sync_writew(UART_NONE_PARITY | UART_WLS_8 | UART_1_STOP, UART_LCR(g_uart));
 	g_brg = CONFIG_BAUDRATE;
 	uart_setbrg();
@@ -319,8 +189,6 @@ void uart_init(void)
 
 int uart_putc(const char c )
 {
-	if ( g_boot_arg->log_enable == 0)
-	    return 0;
 	while (!(DRV_Reg32(UART_LSR(g_uart)) & UART_LSR_THRE));
 
 	if (c == '\n')
@@ -331,10 +199,8 @@ int uart_putc(const char c )
 	return 0;
 }
 
-int uart_getc(void)  /* returns -1 if no data available */
+int uart_getc(void)
 {
-	if ( g_boot_arg->log_enable == 0)
-	    return 0;
 	while (!(DRV_Reg32(UART_LSR(g_uart)) & UART_LSR_DR));
  	return (int)DRV_Reg32(UART_RBR(g_uart));
 }
@@ -344,4 +210,3 @@ void uart_puts(const char *s)
 	while (*s)
 		uart_putc(*s++);
 }
-
