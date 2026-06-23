@@ -8,7 +8,6 @@
 #include <platform/mmc_core.h>
 #include <platform/mmc_test.h>
 #include <platform/mmc_hal.h>
-#include <mt_partition.h>
 
 //#include "pmt.h"
 //#include "../kernel/drivers/mmc-host/emmc_device_list.h"
