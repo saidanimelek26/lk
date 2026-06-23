@@ -25,7 +25,6 @@
 #include <platform/mt_pmic_wrap_init.h>
 #include <target/board.h>
 #include <platform/mtk_wdt.h>
-#include "../../kernel/core/include/mach/mt_rtc_hw.h"
 
 #define RTC_RELPWR_WHEN_XRST	1	/* BBPU = 0 when xreset_rstb goes low */
 
