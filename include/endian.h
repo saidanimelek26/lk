@@ -28,6 +28,7 @@
 #ifndef LITTLE_ENDIAN
 #define LITTLE_ENDIAN 1234
 #endif
+
 #ifndef BIG_ENDIAN
 #define BIG_ENDIAN 4321
 #endif
@@ -35,6 +36,12 @@
 #if __POWERPC__
 #include <ppc_intrinsics.h>
 #endif
+
+// ============================================================
+// PROTECT BYTE_ORDER FROM BEING REDEFINED
+// ============================================================
+
+#ifndef BYTE_ORDER
 
 #if defined(ARCH_ARM)
 #define BYTE_ORDER LITTLE_ENDIAN
@@ -44,9 +51,13 @@
 #define BYTE_ORDER LITTLE_ENDIAN
 #endif
 
-#ifndef BYTE_ORDER
+#if !defined(BYTE_ORDER)
 #error "need to get the BYTE_ORDER define from somewhere"
 #endif
+
+#endif /* BYTE_ORDER */
+
+// ============================================================
 
 // define a macro that unconditionally swaps
 #define SWAP_32(x) \
@@ -95,5 +106,4 @@
 #define WRITE_MEM_BYTE(ptr, data) 	(*(byte *)(ptr) = (data))
 #endif
 
-
-#endif
+#endif /* __ENDIAN_H */
